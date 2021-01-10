@@ -70,8 +70,8 @@ def serialize_lineprotocol_message(measurement, tags= None, values=None, timesta
 
 
 # Create the "flash" animation frames.
-full = Image()
-full.invert()
+full = Image("99999:99999:99999:99999:99999")
+
 flash = [(full * (i/9)) for i in range(9, -1, -1)]
 
 display.show(Image.TARGET)
