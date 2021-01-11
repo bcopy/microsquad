@@ -76,16 +76,21 @@ flash = [(full * (i/9)) for i in range(9, -1, -1)]
 
 display.show(Image.TARGET)
 while True:
-    measurement = None
+    measurement = ""
+    tags = ""
+    values = ""
+    timestamp = 0
     if button_a.was_pressed():
-        measurement="flash"
+        display.show(flash, delay=50, wait=True)
 
     incoming = radio.receive()
     if incoming is not None:
-      measurement,tags,values = parse_lineprotocol_message(incoming)
-
-    if measurement == 'flash':
-        display.show(flash, delay=50, wait=True)
+      measurement = ""
+      measurement,tags,values,timestamp = parse_lineprotocol_message(incoming)
+      if measurement == 'flash':
+          display.show(flash, delay=50, wait=True)
+      else:
+          display.show(measurement, wait=True)
 
     sleep(200)
     display.show(Image.TARGET)
