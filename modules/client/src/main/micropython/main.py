@@ -19,7 +19,7 @@ radio.on()
 
 # Create the "flash" animation frames.
 IMG_FLASH = [(Image("99999:99999:99999:99999:99999") * (i/9)) for i in range(9, -1, -1)]
-
+IMG_SENDING = [(Image.ARROW_N * (i/9)) for i in range(9, -1, -1)]
 ############################
 #  uLineProtocol
 
@@ -142,8 +142,65 @@ def usquad_device_id(tags, values=None, timestamp=None):
   """
   DEVICE_ID = tags.get('id',machine.unique_id())
 
+def usquad_vote(tags, values=None, timestamp=None):
+  """
+     Collect votes from the device
+  """
+  images_str = tags['value']
+  choices =  [(Image(img_str)) for img_str in images_str.split(";")]
+  _durationMs = int(tags.get('duration',10))*1000  # Default 10 seconds
+  _max_votes = int(tags.get('votes',1)) # Maximum number of votes allowed
+  vote_counter = 0
+  start_time = running_time()
+  choices_max = len(choices)
+  current_choice = 0
+  # Reset the button pressed states
+  button_a.get_presses()
+  button_b.was_pressed()
+  #display.show("Vote !", delay=500, clear=True, wait=True)
+  # and ((running_time() - start_time) < _durationMs
+  display.show(choices[current_choice], delay=50, clear=False,wait=True)
+  while (vote_counter < _max_votes) :
+    a_presses = button_a.get_presses()
+    if a_presses > 0:
+      current_choice = (current_choice + a_presses) % choices_max
+      # display.show(str(current_choice), delay=50, clear=False,wait=True)
+      display.show(choices[current_choice])
+    if button_b.was_pressed():
+      usquad_send("read_vote",{"value":current_choice, "index":vote_counter})
+      display.show(IMG_SENDING, delay=30, wait=True, clear=True)
+      vote_counter += 1
+      votes_left = _max_votes - vote_counter
+      if(votes_left > 0):
+        display.show(str(votes_left), clear=False, wait=True)
+        sleep(1500)
+        display.show(choices[current_choice], clear=False,wait=False)
+  display.show(Image.ALL_CLOCKS[::-1], delay=200, wait=False, loop=True)
+
 ############################
 
+
+def usquad_poll_messages():
+  measurement = ""
+  tags = ""
+  values = ""
+  timestamp = 0
+  incoming = None
+  if SIMULATOR == False:
+    incoming = radio.receive()
+  elif button_a.was_pressed():
+      #incoming = 'image,value="99999:99999:99099:99999:99999;99999:55555:55055:55555:99999",delay=500,clear=false,wait=true'
+      #incoming = 'text,value="Show_me_the_money",clear=true,wait=true'
+      #incoming = 'accel'
+      incoming = 'vote,value="99999:99999:99099:99999:99999;99999:55555:55055:55555:99999;55555:50005:00000:50005:55555",duration=10000,votes=4'
+
+  if incoming is not None:
+    measurement,tags,values,timestamp = ulp_parse(incoming)
+    method = usquad_methods.get(measurement, None)
+    if method is not None:
+      method(tags,values, timestamp)
+    elif SIMULATOR == True: # Debug
+      usquad_text({"value":measurement,"wait":"true"} )
 
 
 usquad_methods = {
@@ -151,6 +208,7 @@ usquad_methods = {
   'image'     : usquad_image,
   'accel'     : usquad_read_accel,
   'text'      : usquad_text,
+  'vote'      : usquad_vote,
   'device_id' : usquad_device_id
 }
 
@@ -164,26 +222,5 @@ display.show(Image.TARGET)
 usquad_send("bonjour")
 
 while True:
-    measurement = ""
-    tags = ""
-    values = ""
-    timestamp = 0
-    incoming = None
-    if SIMULATOR == False:
-      incoming = radio.receive()
-    elif button_a.was_pressed():
-        #incoming = 'image,value="99999:99999:99099:99999:99999;99999:55555:55055:55555:99999",delay=500,clear=false,wait=true'
-        #incoming = 'text,value="Show_me_the_money",clear=true,wait=true'
-        incoming = 'accel'
-
-    if incoming is not None:
-      measurement = ""
-      measurement,tags,values,timestamp = ulp_parse(incoming)
-      method = usquad_methods.get(measurement, None)
-      if method is not None:
-        method(tags,values, timestamp)
-      else:
-        usquad_text({"value":measurement,"wait":"true"} )
-
+    usquad_poll_messages()
     sleep(200)
-    #display.show(Image.TARGET)
