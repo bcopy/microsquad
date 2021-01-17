@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-      install_requires=[ 'influx_line_protocol>=0.1.4','cs20-microbitio==0.2', 'paho-mqtt==1.5.1'],
+      install_requires=[ 'dotenv','influx_line_protocol>=0.1.4','cs20-microbitio==0.2', 'paho-mqtt==1.5.1'],
       extras_require={
          'test':['testfixtures','hbmqtt']
       },
