@@ -1,5 +1,5 @@
 from microbit import display,Image,sleep, button_a, button_b, accelerometer, running_time
-
+from micropython import const
 import radio 
 
 SIMU = False
@@ -130,15 +130,23 @@ def usquad_buttons(tags = None, timestamp=None):
     else:
       sleep(200)
       display.show(Image.TRIANGLE)
-      
+
+USQUAD_MEAS_IMAGE = const("im")
+USQUAD_MEAS_ACCELERATOR = const("ac")
+USQUAD_MEAS_TEXT = const("tx")
+USQUAD_MEAS_VOTE = const("vo")
+USQUAD_MEAS_DEVICE_ID = const("id")
+USQUAD_MEAS_BUTTONS = const("bt")
+USQUAD_MEAS_BONJOUR = const("bo")
+
   
 usquad_methods = {
-  'image'     : usquad_image,
-  'accel'     : usquad_read_accel,
-  'text'      : usquad_text,
-  'vote'      : usquad_vote,
-  'device_id' : usquad_device_id,
-  'buttons'   : usquad_buttons
+  USQUAD_MEAS_IMAGE     : usquad_image,
+  USQUAD_MEAS_ACCELERATOR     : usquad_read_accel,
+  USQUAD_MEAS_TEXT      : usquad_text,
+  USQUAD_MEAS_VOTE      : usquad_vote,
+  USQUAD_MEAS_DEVICE_ID : usquad_device_id,
+  USQUAD_MEAS_BUTTONS   : usquad_buttons
 }
 incoming = None
   
@@ -148,10 +156,10 @@ def poll_messages():
   if SIMU == False:
     incoming = radio.receive()
   if button_a.was_pressed():
-    incoming = 'vote,value="99999:99999:99099:99999:99999;99999:55555:00000:55555:99999",duration=4000,votes=4'
+    incoming = 'vo,value="99999:99999:99099:99999:99999;99999:55555:00000:55555:99999;99999:55555:00000:55555:99999",duration=4000,votes=4'
   
 display.show(Image.TARGET)
-usquad_send("bonjour")
+usquad_send("bo")
 
 while True:
   meas = ""
