@@ -14,7 +14,7 @@ except ImportError:
 radio.config(channel=12, group=1)
 radio.on()
 
-IMG_SEND = [(Image.ARROW_N * (i/5)) for i in range(5, -1, -1)]
+IMG_SEND = [(Image.ARROW_N * (i/4)) for i in range(4, -1, -1)]
 
 def _pop_head_or_none(arr):
     if arr and len(arr)>0:
@@ -65,14 +65,14 @@ def usquad_send(measurement, tags= None, timestamp=None):
 def usquad_image(tags, timestamp=None):
   images_str = tags['value']
   img = [(Image(img_str)) for img_str in images_str.split(";")]
-  _delay = int(tags.get('delay',50))
+  _delay = int(tags.get('delay',1000))
   _wait = (tags.get('wait', "true").lower()=="true")
   _clear = (tags.get('clear', "true").lower()=="true")
   display.show(img, delay=_delay, wait=_wait, clear=_clear)
 
 def usquad_text(tags, timestamp=None):
   text_str = tags['value'].replace("_", " ")
-  _delay = int(tags.get('delay',50))
+  _delay = int(tags.get('delay',1000))
   _wait = (tags.get('wait', "true").lower()=="true")
   _clear = (tags.get('clear', "true").lower()=="true")
   display.show(text_str, delay=_delay, wait=_wait, clear=_clear)
@@ -102,7 +102,7 @@ def usquad_vote(tags, timestamp=None):
       display.show(choices[choice])
     if button_b.was_pressed():
       usquad_send("read_vote",{"value":choice, "index":vote_cn})
-      display.show(IMG_SEND, delay=30, wait=True, clear=True)
+      display.show(IMG_SEND, delay=50, wait=True, clear=True)
       vote_cn += 1
       votes_left = _max_votes - vote_cn
       if(votes_left > 0):
@@ -119,10 +119,10 @@ def usquad_buttons(tags = None, timestamp=None):
   stop = False
   while not stop:
     if button_a.was_pressed():
-      usquad_send("read_button_a")
+      usquad_send("read_button",{"value":"a"})
       display.show("a")
     if button_b.was_pressed():
-      usquad_send("read_button_b") 
+      usquad_send("read_button",{"value":"b"})
       display.show("b")
     poll_messages()
     if incoming is not None:
