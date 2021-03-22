@@ -1,0 +1,146 @@
+{
+    "astroBackpack": {
+        "position": {
+            "x": 0,
+            "y": 0.2,
+            "z": -0.1
+        },
+        "bone": "Chest",
+        "scene": null
+    },
+    "astroHelmet": {
+        "position": {
+            "x": 0,
+            "y": 0.55,
+            "z": 0
+        },
+        "bone": "Head",
+        "scene": null
+    },
+    "beard": {
+        "position": {
+            "x": 0,
+            "y": 0.25,
+            "z": 0.3
+        },
+        "bone": "Head",
+        "scene": null
+    },
+    "cap": {
+        "position": {
+            "x": 0,
+            "y": 0.55,
+            "z": 0.03
+        },
+        "bone": "Head",
+        "scene": null
+    },
+    "farmerCap": {
+        "position": {
+            "x": 0,
+            "y": 0.7,
+            "z": 0
+        },
+        "bone": "Head",
+        "scene": null
+    },
+    "glassesRetro": {
+        "position": {
+            "x": 0,
+            "y": 0.45,
+            "z": 0.5
+        },
+        "bone": "Head",
+        "scene": null
+    },
+    "glassesRound": {
+        "position": {
+            "x": 0,
+            "y": 0.45,
+            "z": 0.5
+        },
+        "bone": "Head",
+        "scene": null
+    },
+    "hairBobcut": {
+        "position": {
+            "x": 0,
+            "y": 0.75,
+            "z": -0.035
+        },
+        "bone": "Head",
+        "scene": null
+    },
+    "hairPigtail": {
+        "position": {
+            "x": 0,
+            "y": 0.8,
+            "z": -0.4
+        },
+        "bone": "Head",
+        "scene": null
+    },
+    "hairPonytail": {
+        "position": {
+            "x": 0,
+            "y": 0.45,
+            "z": -0.5
+        },
+        "bone": "Head",
+        "scene": null
+    },
+    "hairTail": {
+        "position": {
+            "x": 0,
+            "y": 0.4,
+            "z": -0.4
+        },
+        "bone": "Head",
+        "scene": null
+    },
+    "militaryBackpack": {
+        "position": {
+            "x": 0,
+            "y": 0.2,
+            "z": -0.1
+        },
+        "bone": "Chest",
+        "scene": null
+    },
+    "militaryBeret": {
+        "position": {
+            "x": -0.05,
+            "y": 0.95,
+            "z": 0.035
+        },
+        "bone": "Head",
+        "scene": null
+    },
+    "modernBackpack": {
+        "position": {
+            "x": 0,
+            "y": 0.2,
+            "z": -0.1
+        },
+        "bone": "Chest",
+        "scene": null
+    },
+    "racingHelmet": {
+        "position": {
+            "x": 0,
+            "y": 0.4,
+            "z": 0
+        },
+        "bone": "Head",
+        "scene": null
+    },
+    "strawHat": {
+        "position": {
+            "x": 0,
+            "y": 0.7,
+            "z": -0.05
+        },
+        "bone": "Head",
+        "scene": null
+    }
+}

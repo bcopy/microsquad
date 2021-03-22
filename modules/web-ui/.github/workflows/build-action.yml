@@ -1,0 +1,40 @@
+name: build-action
+on: [push]
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
+            - uses: actions/setup-node@v1
+            
+            - name: Install npm dependencies
+              run: npm install
+            
+            - name: Build
+              run: npm run build
+            
+            - name: SonarCloud Scan
+              uses: sonarsource/sonarcloud-github-action@master
+              env:
+                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+            - name: Copy test environment
+              run: cp .env.test .env
+              
+            - name: Start Mosquitto
+              uses: namoshek/mosquitto-github-action@v1
+              with:
+                version: '1.6'
+                ports: '1883:1883 8883:8883'
+                certificates: ${{ github.workspace }}/.ci/tls-certificates
+                config: ${{ github.workspace }}/.ci/mosquitto.conf
+                container-name: 'mqtt'
+                
+            - name: Wait a bit until MQTT broker has started
+              run: sleep 30
+
+            - name: Cypress Test
+              uses: cypress-io/github-action@v2
+              with:
+                start: npm start

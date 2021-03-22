@@ -1,0 +1,9 @@
+node_modules
+.ci
+.git
+.gitignore
+.github
+README.md
+sonar-project.properties
+cypress
+cypress.json
