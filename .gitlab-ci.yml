@@ -1,0 +1,15 @@
+
+Web UI docker image:
+    stage: build
+    image: 
+      name: gitlab-registry.cern.ch/ci-tools/docker-image-builder
+      entrypoint: [""]
+    script:
+      - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
+      - echo Building latest Jenkins Docker Image $CI_PROJECT_NAME v $JENKINS_VERSION
+      - /kaniko/executor --context $CI_PROJECT_DIR/modules/web-ui --dockerfile $CI_PROJECT_DIR/modules/web-ui/Dockerfile --destination $CI_REGISTRY_IMAGE:$CI_REF_NAME
+  only:
+    - master
+    - develop
+
+
