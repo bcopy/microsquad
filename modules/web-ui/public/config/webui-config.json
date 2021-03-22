@@ -1,0 +1,5 @@
+{
+    "MQTT_HOST": "broker.emqx.io",
+    "MQTT_PORT": 8083,
+    "MQTT_CLIENT_ID":  "clientID"
+}
