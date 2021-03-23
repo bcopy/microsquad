@@ -1,10 +1,11 @@
 name: build-action
 on: [push]
+defaults:
+  run:
+    working-directory: ./modules/web-ui
 jobs:
     build:
         runs-on: ubuntu-latest
-        env:
-            working-directory: ./modules/web-ui
         steps:
             - uses: actions/checkout@v2
             - uses: actions/setup-node@v1
