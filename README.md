@@ -1,5 +1,10 @@
 # MicroSquad (a.k.a uSquad)
 
+[![Known Vulnerabilities](https://snyk.io/test/github/lucasvanmol/usquad-web-ui/badge.svg)](https://snyk.io/test/github/lucasvanmol/usquad-web-ui)
+![Build](https://github.com/lucasvanmol/usquad-web-ui/workflows/build-action/badge.svg)
+![Dependencies](https://david-dm.org/lucasvanmol/usquad-web-ui.svg)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=lucasvanmol_usquad-web-ui&metric=alert_status)](https://sonarcloud.io/dashboard?id=lucasvanmol_usquad-web-ui)
+
 A Microbit orchestration library based on [Bitio](https://github.com/AdventuresInMinecraft/bitio) : Using a single Microbit as a gateway, control remote Microbits via the radio.
 Messages are exchanged using the Influx line protocol (with a small custom parser implemented in micropython)
 
