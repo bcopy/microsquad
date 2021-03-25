@@ -3,16 +3,15 @@ import { MQTTClient } from "./mqtt";
 import { PlayerManager } from './playerManager';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { Context, UpdateObject } from "./updateObject";
-import config from './config'; 
+import config from './config';
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { Player } from "./player";
 import * as Accessories from './accessories.json';
 import { Billboard } from "./billboard";
 
 //////////////////////////////////////////// MQTT SETUP ////////////////////////////////////////////
-
 var mqttclient = new MQTTClient(
-    config.MQTT_HOST, config.MQTT_PORT, 
+    config.MQTT_HOST, parseInt(config.MQTT_PORT), 
     config.MQTT_CLIENT_ID + ":" + Math.random().toString(36).substr(2, 5), // unique clientID to prevent reconnect loop
     onMessageArrived,
     onMQTTConnect,

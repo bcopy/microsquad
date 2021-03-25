@@ -1,0 +1,11 @@
+version: "3.9"
+services:
+  web-ui:
+    build: .
+    tty: true
+    ports: 
+      - "8000:80"
+    environment: 
+      MQTT_HOST: broker.hivemq.com
+      MQTT_PORT: 8000
+      MQTT_CLIENT_ID: myClient
