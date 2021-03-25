@@ -6,7 +6,7 @@ import { Context, UpdateObject } from "./updateObject";
 import config from './config';
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { Player } from "./player";
-import * as Accessories from './accessories.json';
+import Accessories from './accessories.json';
 import { Billboard } from "./billboard";
 
 //////////////////////////////////////////// MQTT SETUP ////////////////////////////////////////////
