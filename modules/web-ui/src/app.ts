@@ -211,11 +211,7 @@ animate();
 ///////////////////////////////////////// COMMAND HANDLING /////////////////////////////////////////
 
 function onMessageArrived(message : any) {
-    console.log("onMessageArrived: "+message.payloadString);
-
-    let subs : HTMLInputElement = <HTMLInputElement>document.getElementById('subscriptions');
-    subs.innerHTML = "[" + message.destinationName + "]: " + message.payloadString + "<br />";
-    
+    console.log("onMessageArrived: "+message.payloadString);   
     commandHandler(message.destinationName, message.payloadString);
 }
 
