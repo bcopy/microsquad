@@ -11,12 +11,12 @@ def on_connect(client, userdata, flags, rc):
 
 # The callback for when a PUBLISH message is received from the server.
 def on_message(client, userdata, msg):
-    print(msg.topic+" "+str(msg.payload.decode('ascii')))
-    radio.send(str(msg.payload.decode('ascii')))
+    print("Queuing " + msg.topic+" "+str(msg.payload.decode('ascii')))
+    queue.append(msg)
 
 
 
-radio.config(length=200, channel=12, group=1)
+radio.config(length=200, channel=12, group=12)
 radio.on()
 
 
@@ -24,16 +24,18 @@ client = mqtt.Client()
 client.on_connect = on_connect
 client.on_message = on_message
 
-client.connect("broker.hivemq.com", 1883, 60)
+queue = []
 
-# Blocking call that processes network traffic, dispatches callbacks and
-# handles reconnecting.
-# Other loop*() functions are available that give a threaded interface and a
-# manual interface.
+client.connect("localhost", 1883, 60)
+
 client.loop_start()
 
 while True:
-    msg = radio.receive()
-    if msg != "None":
-        print(msg)
-    sleep(100)
+    inmsg = radio.receive()
+    if inmsg != "None":
+        print(inmsg)
+    if len(queue) > 0:
+        outmsg = queue.pop(0)
+        print("Sending " + outmsg.topic+" "+str(outmsg.payload.decode('ascii')) +" (left "+str(len(queue))+")")
+        radio.send(str(outmsg.payload.decode('ascii')))
+    sleep(10)
