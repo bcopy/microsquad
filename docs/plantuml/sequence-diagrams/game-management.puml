@@ -1,0 +1,46 @@
+@startuml
+
+
+actor "Game Organiser" as Organiser
+actor Player
+control Gateway
+database "Game Session" as Game
+queue Broker
+participant "Web Display" as Web
+
+activate Organiser
+Organiser -> Gateway : Start session
+
+activate Gateway
+activate Broker
+
+Gateway -> Game : Declare Game
+
+activate Game
+Gateway -> Broker : Declare session
+Gateway --> Organiser : Session Identifiers
+
+Organiser -> Web : Display Game
+activate Web
+Web -> Broker : Subscribe
+Organiser -> Player : Start
+activate Player
+Player -> Gateway : Initiate connection
+Gateway -> Broker : Declare device
+
+loop Game phase
+    Organiser -> Gateway : Start Phase
+    loop Player interactions
+        Player -> Gateway : Interact
+        Gateway -> Game : Update State
+        Gateway -> Broker : Broadcast update
+        Broker -> Web : Update Display
+    end
+    Organiser -> Gateway : End Phase
+end
+deactivate Player
+Organiser -> Gateway : End Game
+Gateway -> Game : End Game
+Gateway -> Broker : End Game
+Broker -> Web : Display Game Stats
+@enduml
