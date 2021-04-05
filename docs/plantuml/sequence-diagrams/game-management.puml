@@ -17,7 +17,7 @@ activate Broker
 Gateway -> Game : Declare Game
 
 activate Game
-Gateway -> Broker : Declare session
+Gateway -> Broker : Declare namespace
 Gateway --> Organiser : Session Identifiers
 
 Organiser -> Web : Display Game
@@ -40,7 +40,7 @@ loop Game phase
 end
 deactivate Player
 Organiser -> Gateway : End Game
-Gateway -> Game : End Game
-Gateway -> Broker : End Game
+Gateway -> Game : Close Session
+Gateway -> Broker : Release namespace
 Broker -> Web : Display Game Stats
 @enduml
