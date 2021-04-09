@@ -42,3 +42,13 @@ jobs:
               with:
                 start: npm start
                 project: ./modules/web-ui
+                
+            - name: Build container image
+              uses: docker/build-push-action@v1
+              with:
+                username: ${{ github.actor }}
+                password: ${{ secrets.GITHUB_TOKEN }}
+                registry: docker.pkg.github.com
+                repository: ${{ github.repository }}/web-ui
+                tag_with_sha: true
+                tag_with_ref: true
