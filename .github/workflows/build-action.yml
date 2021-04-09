@@ -44,8 +44,9 @@ jobs:
      #           project: ./modules/web-ui
                 
             - name: Build container image
-              uses: docker/build-push-action@v1
+              uses: docker/build-push-action@v2
               with:
+                context: ./modules/web-ui
                 username: ${{ github.actor }}
                 password: ${{ secrets.GITHUB_TOKEN }}
                 registry: docker.pkg.github.com
