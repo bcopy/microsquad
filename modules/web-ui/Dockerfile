@@ -1,4 +1,4 @@
-FROM node:14-alpine3.13
+FROM node:14-alpine3.13 as builder
 
 RUN apk add --update nodejs npm
 
@@ -13,10 +13,10 @@ USER node
 
 RUN npm install --only=prod
 
-ENV NODE_ENV=production
-ENV PORT=8080
-
 COPY --chown=node:node . .
+
+# Set production environment vars
+RUN mv .env.prod .env
 
 RUN npm run build
 
@@ -27,4 +27,11 @@ FROM sebp/lighttpd:latest
 
 RUN apk update
 
-COPY --from=0 /home/node/app/dist /var/www/localhost/htdocs
+COPY --from=builder /home/node/app/dist /var/www/localhost/htdocs
+
+# Copy entrypoint 
+COPY ./entrypoint.sh /
+RUN chmod +x entrypoint.sh
+ENTRYPOINT ["sh","/entrypoint.sh"]
+
+CMD ["start.sh"]
