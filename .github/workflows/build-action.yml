@@ -47,4 +47,5 @@ jobs:
               uses: docker/build-push-action@v2
               with:
                 context: ./modules/web-ui
+                push: true
                 tags: docker.pkg.github.com/cmcrobotics/microsquad/web-ui:latest
