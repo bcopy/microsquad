@@ -47,9 +47,4 @@ jobs:
               uses: docker/build-push-action@v2
               with:
                 context: ./modules/web-ui
-                username: ${{ github.actor }}
-                password: ${{ secrets.GITHUB_TOKEN }}
-                registry: docker.pkg.github.com
-                repository: docker.pkg.github.com/cmcrobotics/microsquad/web-ui
-                tag_with_sha: true
-                tag_with_ref: true
+                tags: docker.pkg.github.com/cmcrobotics/microsquad/web-ui:latest
