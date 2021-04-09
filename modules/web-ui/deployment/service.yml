@@ -42,6 +42,74 @@ objects:
         name: webui
         weight: 100
       wildcardPolicy: None
+  - apiVersion: v1
+    kind: Service
+    metadata:
+      labels:
+        app: usquad
+      name: mosquitto
+      namespace: ${NAMESPACE}
+      selfLink: /api/v1/namespaces/${NAMESPACE}/services/mosquitto
+    spec:
+      ports:
+        - name: 9001-tcp
+          port: 9001
+          protocol: TCP
+          targetPort: 9001
+      selector:
+        deploymentconfig: mosquitto_dc
+      sessionAffinity: None
+      type: ClusterIP
+  - apiVersion: apps.openshift.io/v1
+    kind: DeploymentConfig
+    metadata:
+      labels:
+        app: usquad
+      name: mosquitto_dc
+      namespace: ${NAMESPACE}
+      selfLink: >-
+        /apis/apps.openshift.io/v1/namespaces/${NAMESPACE}/deploymentconfigs/mosquitto
+    spec:
+      replicas: 3
+      selector:
+        app: usquad
+        deploymentconfig: mosquitto_dc
+      strategy:
+        
+        type: Rolling
+      template:
+        metadata:
+          labels:
+            app: usquad
+            deploymentconfig: mosquitto_dc
+        spec:
+          containers:
+            - image: >-
+                eclipse-mosquitto:1.6
+              imagePullPolicy: IfNotPresent
+              name: mosquitto
+              envFrom:
+                - secretRef:
+                    name: ci4fes
+                - configMapRef:
+                    name: env-config
+              ports:
+                - containerPort: 9001
+                  protocol: TCP
+              resources: 
+                requests:
+                  cpu: 200m
+                  memory: 128Mi
+                limits:
+                  cpu: 500m
+                  memory: 256Mi
+              terminationMessagePath: /dev/termination-log
+              terminationMessagePolicy: File
+          dnsPolicy: ClusterFirst
+          restartPolicy: Always
+          schedulerName: default-scheduler
+          securityContext: { }
+          terminationGracePeriodSeconds: 30
   - apiVersion: apps.openshift.io/v1
     kind: DeploymentConfig
     metadata:
@@ -90,6 +158,13 @@ objects:
                 periodSeconds: 15
                 successThreshold: 1
                 timeoutSeconds: 15
+              env:
+                - name: MQTT_HOST
+                  value: mosquitto
+                - name: MQTT_PORT
+                  value: 9001
+                - name: MQTT_CLIENT_ID
+                  value: werewrwegfgdgtryrthdf
               ports:
                 - containerPort: 80
                   protocol: TCP
