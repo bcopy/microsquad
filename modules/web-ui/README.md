@@ -17,7 +17,7 @@ The MicroSquad web UI relies on a MQTT broker.
 
 Publish the Web UI lighttpd settings as a config map
 ```bash
-
+oc create configmap lighttpd-config --from-file=deployment/conf/lighttpd/ --dry-run -o yaml | oc apply -f -
 ```
 
 ```bash
