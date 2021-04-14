@@ -26,19 +26,21 @@ RUN  mv ./public/assets ./dist/
 # IMPORTANT : The upstream image defines /etc/lighttpd as a volume.
 #             This prevents any modifications to be brought to the image's files
 #             under /etc/lighttpd.
-FROM sebp/lighttpd:latest
+FROM nginx:stable-alpine
 
 RUN apk update
 
-COPY --from=builder /home/node/app/dist /var/www/localhost/htdocs
+COPY --from=builder /home/node/app/dist /www
 
-# Copy entrypoint 
-COPY ./entrypoint.sh /
-RUN chmod +x entrypoint.sh
+ENV NGINX_PORT=8080
+
+# # Copy entrypoint 
+# COPY ./entrypoint.sh /
+# RUN chmod +x entrypoint.sh
 
 
-ENTRYPOINT ["sh","/entrypoint.sh"]
+# ENTRYPOINT ["sh","/entrypoint.sh"]
 
 USER 1000
 
-CMD ["start.sh"]
+# CMD ["start.sh"]
