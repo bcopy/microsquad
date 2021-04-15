@@ -3,20 +3,51 @@ import { MQTTClient } from "./mqtt";
 import { PlayerManager } from './playerManager';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { Context, UpdateObject } from "./updateObject";
-import config from './config';
+import envConfig from './config';
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { Player } from "./player";
 import Accessories from './accessories.json';
 import { Billboard } from "./billboard";
 
-//////////////////////////////////////////// MQTT SETUP ////////////////////////////////////////////
-var mqttclient = new MQTTClient(
-    config.MQTT_HOST, parseInt(config.MQTT_PORT), 
-    config.MQTT_CLIENT_ID + ":" + Math.random().toString(36).substr(2, 5), // unique clientID to prevent reconnect loop
-    onMessageArrived,
-    onMQTTConnect,
-    onMQTTConnectionLost,
+var config = envConfig;
+
+var mqttclient;
+
+const loader = new THREE.FileLoader();
+
+function startMqttSubscriptions(){
+
+    mqttclient = new MQTTClient(
+        config.MQTT_HOST, parseInt(config.MQTT_PORT), 
+        config.MQTT_CLIENT_ID + ":" + Math.random().toString(36).substr(2, 5), // unique clientID to prevent reconnect loop
+        onMessageArrived,
+        onMQTTConnect,
+        onMQTTConnectionLost,
+    );
+}
+
+
+//load a text file and output the result to the console
+loader.load(
+	// resource URL
+	'conf/config.json',
+
+	// onLoad callback
+	function ( data ) {
+		config = JSON.parse(<string>data);
+        startMqttSubscriptions();
+	},
+    undefined,
+    // onError callback
+	function ( err ) {
+		console.error( 'Could not load JSON configuration at conf/config.json - using Node env configuration' );
+        startMqttSubscriptions();
+	}
 );
+
+
+//////////////////////////////////////////// MQTT SETUP ////////////////////////////////////////////
+
 
 // Connect subscribe & publish buttons
 var subButton : HTMLButtonElement = <HTMLButtonElement>document.getElementById("subscribe-button");
