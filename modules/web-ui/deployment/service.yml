@@ -152,6 +152,18 @@ objects:
           schedulerName: default-scheduler
           securityContext: { }
           terminationGracePeriodSeconds: 30
+  - kind: ConfigMap
+    apiVersion: v1
+    metadata:
+      name: web-ui-config
+      namespace: ${NAMESPACE}
+    data: 
+      config.json: |-
+          {
+              "MQTT_HOST": "${NAMESPACE}/mqtt",
+              "MQTT_PORT": "80",
+              "MQTT_CLIENT_ID":"web-ui-client"
+          }
   - apiVersion: apps.openshift.io/v1
     kind: DeploymentConfig
     metadata:
@@ -206,12 +218,12 @@ objects:
                 successThreshold: 1
                 timeoutSeconds: 15
               env:
-                - name: MQTT_HOST
-                  value: "mosquitto"
-                - name: MQTT_PORT
-                  value: "9001"
-                - name: MQTT_CLIENT_ID
-                  value: "usquad-web-ui"
+                - name: NGINX_CONTEXT_PATH
+                  value: "/web-ui"
+                - name:  NGINX_PORT
+                  value: "8080"
+                - name:  NGINX_HOSTNAME
+                  value: "${NAMESPACE}.web.cern.ch"
               ports:
                 - containerPort: 8080
                   protocol: TCP
@@ -225,8 +237,10 @@ objects:
               volumeMounts:
                 - name: httpd-run-volume
                   mountPath: "/run"
-                - name: lighttpd-config-volume
-                  mountPath: "/etc/lighttpd"
+                - name: nginx-templates-config-volume
+                  mountPath: "/etc/nginx/templates"
+                - name: web-ui-config-volume
+                  mountPath: "/usr/share/nginx/html/conf"
               terminationMessagePath: /dev/termination-log
               terminationMessagePolicy: File
           dnsPolicy: ClusterFirst
@@ -237,9 +251,12 @@ objects:
           volumes:
             - name: httpd-run-volume
               emptyDir: {}
-            - name: lighttpd-config-volume
+            - name: web-ui-config-volume
               configMap:
-                name: lighttpd-config
+                name: web-ui-config
+            - name: nginx-templates-config-volume
+              configMap:
+                name: nginx-templates-config
 
 parameters:
   - name: NAMESPACE
