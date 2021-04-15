@@ -18,7 +18,7 @@ const loader = new THREE.FileLoader();
 function startMqttSubscriptions(){
 
     mqttclient = new MQTTClient(
-        config.MQTT_HOST, parseInt(config.MQTT_PORT), 
+        config.MQTT_URI,
         config.MQTT_CLIENT_ID + ":" + Math.random().toString(36).substr(2, 5), // unique clientID to prevent reconnect loop
         onMessageArrived,
         onMQTTConnect,

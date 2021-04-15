@@ -1,16 +1,16 @@
 apiVersion: v1
 kind: Template
 metadata:
-  name: webui_service_template
+  name: web-ui-service-template
 objects:
   - apiVersion: v1
     kind: Service
     metadata:
       labels:
         app: usquad
-      name: webui
+      name: web-ui
       namespace: ${NAMESPACE}
-      selfLink: /api/v1/namespaces/${NAMESPACE}/services/webui
+      selfLink: /api/v1/namespaces/${NAMESPACE}/services/web-ui
     spec:
       ports:
         - name: 8080-tcp
@@ -18,9 +18,31 @@ objects:
           protocol: TCP
           targetPort: 8080
       selector:
-        deploymentconfig: webui-dc
+        deploymentconfig: web-ui-dc
       sessionAffinity: None
       type: ClusterIP
+  - apiVersion: route.openshift.io/v1
+    kind: Route
+    metadata:
+      labels:
+        app: usquad
+      annotations:
+        router.cern.ch/network-visibility: Internet
+      name: web-ui-route
+      namespace: ${NAMESPACE}
+    spec:
+      host: ${NAMESPACE}.web.cern.ch
+      path: ${CONTEXT_PATH}
+      port:
+        targetPort: 8080-tcp
+      tls:
+        insecureEdgeTerminationPolicy: Redirect
+        termination: edge
+      to:
+        kind: Service
+        name: web-ui
+        weight: 100
+      wildcardPolicy: None
   - apiVersion: route.openshift.io/v1
     kind: Route
     metadata:
@@ -41,27 +63,6 @@ objects:
       to:
         kind: Service
         name: mosquitto
-        weight: 100
-      wildcardPolicy: None
-  - apiVersion: route.openshift.io/v1
-    kind: Route
-    metadata:
-      labels:
-        app: usquad
-      annotations:
-        router.cern.ch/network-visibility: Internet
-      name: webui-route
-      namespace: ${NAMESPACE}
-    spec:
-      host: ${NAMESPACE}.web.cern.ch
-      port:
-        targetPort: 8080-tcp
-      tls:
-        insecureEdgeTerminationPolicy: Redirect
-        termination: edge
-      to:
-        kind: Service
-        name: webui
         weight: 100
       wildcardPolicy: None
   - apiVersion: v1
@@ -160,8 +161,7 @@ objects:
     data: 
       config.json: |-
           {
-              "MQTT_HOST": "${NAMESPACE}/mqtt",
-              "MQTT_PORT": "80",
+              "MQTT_URI": "wss://${NAMESPACE}.web.cern.ch/mqtt",
               "MQTT_CLIENT_ID":"web-ui-client"
           }
   - apiVersion: apps.openshift.io/v1
@@ -169,15 +169,15 @@ objects:
     metadata:
       labels:
         app: usquad
-      name: webui-dc
+      name: web-ui-dc
       namespace: ${NAMESPACE}
       selfLink: >-
-        /apis/apps.openshift.io/v1/namespaces/${NAMESPACE}/deploymentconfigs/webui
+        /apis/apps.openshift.io/v1/namespaces/${NAMESPACE}/deploymentconfigs/web-ui
     spec:
       replicas: 1
       selector:
         app: usquad
-        deploymentconfig: webui-dc
+        deploymentconfig: web-ui-dc
       strategy:
         recreateParams:
           timeoutSeconds: 240
@@ -190,36 +190,36 @@ objects:
         metadata:
           labels:
             app: usquad
-            deploymentconfig: webui-dc
+            deploymentconfig: web-ui-dc
         spec:
           containers:
             - image: >-
-                gitlab-registry.cern.ch/cmcrobotics/microsquad:latest
-              imagePullPolicy: IfNotPresent
-              name: webui
+                gitlab-registry.cern.ch/cmcrobotics/microsquad:develop
+              imagePullPolicy: Always
+              name: web-ui
               livenessProbe:
                 failureThreshold: 5
                 httpGet:
-                  path: /
+                  path: ${CONTEXT_PATH}
                   port: 8080
                   scheme: HTTP
                 initialDelaySeconds: 30
-                periodSeconds: 30
+                periodSeconds: 60
                 successThreshold: 1
                 timeoutSeconds: 5
               readinessProbe:
                 failureThreshold: 5
                 httpGet:
-                  path: /
+                  path: ${CONTEXT_PATH}
                   port: 8080
                   scheme: HTTP
-                initialDelaySeconds: 30
+                initialDelaySeconds: 10
                 periodSeconds: 15
                 successThreshold: 1
                 timeoutSeconds: 15
               env:
                 - name: NGINX_CONTEXT_PATH
-                  value: "/web-ui"
+                  value: "${CONTEXT_PATH}"
                 - name:  NGINX_PORT
                   value: "8080"
                 - name:  NGINX_HOSTNAME
@@ -262,4 +262,7 @@ parameters:
   - name: NAMESPACE
     description: Website namespace (hostname)
     required: true
+  - name: CONTEXT_PATH
+    description: Website namespace (hostname)
+    value: "/web-ui"
 
