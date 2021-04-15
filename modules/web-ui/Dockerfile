@@ -33,7 +33,7 @@ RUN apk update
 
 ######################
 # Make the image Openshift-friendly
-RUN chmod g+rwxt /var/cache/nginx /var/run /var/log/nginx /etc/nginx/conf.d
+RUN chmod g+rwxt /var/cache/nginx /var/run /var/log/nginx /etc/nginx/conf.d || true
 # Remove the upstream default configuration
 RUN rm  /etc/nginx/conf.d/default.conf
 # Remove the upstream IPv6 configuration entrypoint - only useful if we kept the default configuration
