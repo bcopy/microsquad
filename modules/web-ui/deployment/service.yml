@@ -54,7 +54,7 @@ objects:
       namespace: ${NAMESPACE}
     spec:
       host: ${NAMESPACE}.web.cern.ch
-      path: /
+      path: /mqtt
       port:
         targetPort: 9001-tcp
       tls:
@@ -90,6 +90,28 @@ objects:
       namespace: ${NAMESPACE}
     data: 
       mosquitto.conf: |-
+        # Config file for mosquitto
+        retry_interval 20
+        sys_interval 10
+        max_inflight_messages 40
+        max_queued_messages 200
+        queue_qos0_messages false
+        message_size_limit 0
+        allow_zero_length_clientid true
+        allow_duplicate_messages false
+        # Logging
+        connection_messages true
+        log_dest stderr
+        log_dest stdout
+        # log_dest file /mosquitto/log/mosquitto.log
+        log_type error
+        log_type warning
+        log_type notice
+        log_type information
+        log_type all
+        log_type debug
+        log_timestamp true
+
         listener 1883
         protocol mqtt
 
@@ -141,13 +163,15 @@ objects:
               terminationMessagePath: /dev/termination-log
               terminationMessagePolicy: File
               volumeMounts:
-                - mountPath: /etc/mosquitto
+                - mountPath: /mosquitto/config/
                   name: mosquitto-config-volume
                   readOnly: true
           volumes:
             - name: mosquitto-config-volume
               configMap:
                 name: mosquitto-config
+            - name: mosquitto-log
+              
           dnsPolicy: ClusterFirst
           restartPolicy: Always
           schedulerName: default-scheduler
@@ -161,8 +185,30 @@ objects:
     data: 
       config.json: |-
           {
-              "MQTT_URI": "wss://${NAMESPACE}.web.cern.ch",
+              "MQTT_URI": "wss://${NAMESPACE}.web.cern.ch/mqtt",
               "MQTT_CLIENT_ID":"web-ui-client"
+          }
+  - kind: ConfigMap
+    apiVersion: v1
+    metadata:
+      name: nginx-templates-config
+      namespace: ${NAMESPACE}
+    data: 
+      default.conf.template: |-
+          server{
+            listen       ${NGINX_PORT} default_server;
+            server_name  ${NGINX_HOSTNAME};
+            root   /usr/share/nginx/html;
+            
+            location = ${NGINX_CONTEXT_PATH} {
+                rewrite ^ ${NGINX_CONTEXT_PATH}/index.html permanent;
+            }
+
+            location ~ ${NGINX_CONTEXT_PATH}/.* {
+                rewrite ^${NGINX_CONTEXT_PATH}/(.*)$ /$1 last;
+                index  index.html index.htm;
+
+            }
           }
   - apiVersion: apps.openshift.io/v1
     kind: DeploymentConfig
