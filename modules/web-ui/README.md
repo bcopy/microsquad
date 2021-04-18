@@ -15,11 +15,6 @@ The MicroSquad web UI relies on a MQTT broker.
 
 ### Deploy commands
 
-Publish the Web UI NGINX configuration template as a config map.
-This is useful to share the settings between OpenShift and Docker (for local development).
-```bash
-oc create configmap nginx-templates-config --from-file=deployment/conf/nginx/templates --dry-run -o yaml | oc apply -f -
-```
 
 ```bash
 oc process -p NAMESPACE=microsquad -f deployment/service.yml --local=true | oc apply -f -
