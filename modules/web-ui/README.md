@@ -25,3 +25,15 @@ oc create configmap nginx-templates-config --from-file=deployment/conf/nginx/tem
 oc process -p NAMESPACE=microsquad -f deployment/service.yml --local=true | oc apply -f -
 ```
 
+
+## How to develop with Docker
+
+* Create the image
+  ```bash
+  docker build -t usquad .
+  ```
+* Start the image
+  ```bash
+  docker run -it --rm --name usquad -e NGINX_PORT=8080 -e NGINX_CONTEXT_PATH=/ui -v `pwd`/deployment/conf/nginx/templates:/etc/nginx/templates -p 8080:8080 usquad
+  ```
+* Access the server from your web browser at http://localhost:8080/ui
