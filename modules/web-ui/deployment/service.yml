@@ -54,7 +54,7 @@ objects:
       namespace: ${NAMESPACE}
     spec:
       host: ${NAMESPACE}.web.cern.ch
-      path: /mqtt
+      path: /
       port:
         targetPort: 9001-tcp
       tls:
@@ -161,7 +161,7 @@ objects:
     data: 
       config.json: |-
           {
-              "MQTT_URI": "wss://${NAMESPACE}.web.cern.ch/mqtt",
+              "MQTT_URI": "wss://${NAMESPACE}.web.cern.ch",
               "MQTT_CLIENT_ID":"web-ui-client"
           }
   - apiVersion: apps.openshift.io/v1
@@ -203,7 +203,7 @@ objects:
                   path: ${CONTEXT_PATH}
                   port: 8080
                   scheme: HTTP
-                initialDelaySeconds: 30
+                initialDelaySeconds: 10
                 periodSeconds: 60
                 successThreshold: 1
                 timeoutSeconds: 5
@@ -213,9 +213,9 @@ objects:
                   path: ${CONTEXT_PATH}
                   port: 8080
                   scheme: HTTP
-                initialDelaySeconds: 10
+                initialDelaySeconds: 5
                 periodSeconds: 15
-                successThreshold: 1
+                successThreshold: 3
                 timeoutSeconds: 15
               env:
                 - name: NGINX_CONTEXT_PATH
@@ -263,6 +263,6 @@ parameters:
     description: Website namespace (hostname)
     required: true
   - name: CONTEXT_PATH
-    description: Website namespace (hostname)
-    value: "/web-ui"
+    description: Web UI Context Path
+    value: "/ui"
 
