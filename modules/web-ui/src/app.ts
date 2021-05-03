@@ -405,7 +405,7 @@ function commandHandler(topic, msg) {
 }
 
 function onMQTTConnect() {
-    console.log("Connected to " + mqttclient.host + ":" + mqttclient.port);
+    console.log("Connected to " + mqttclient.uri);
     mqttclient.subscribe("players/#");
     mqttclient.subscribe("teams/#");
     mqttclient.subscribe("billboard/#");
