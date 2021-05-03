@@ -1,3 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: usquad
+  labels:
+    run: usquad
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 80
+    protocol: TCP
+    name: http
+  selector:
+    run: usquad
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -5,15 +21,15 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: usquad
+      run: usquad
   replicas: 1
   template:
     metadata:
       labels:
-        app: usquad
+        run: usquad
     spec:
       containers:
-      - name: usquad
-        image: eu.gcr.io/qualified-star-312116/web-ui
+      - name: usquad-web-ui
+        image: ghcr.io/cmcrobotics/microsquad-web-ui:latest
         ports:
         - containerPort: 80
