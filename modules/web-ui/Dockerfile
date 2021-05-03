@@ -44,6 +44,9 @@ RUN apk update
 
 # RUN addgroup nginx root
 
+RUN chmod u=rwxt /var/cache/nginx /var/run /var/log/nginx /etc/nginx/conf.d || true
+RUN chown nginx  /var/cache/nginx /var/run /var/log/nginx /etc/nginx/conf.d || true
+
 COPY --from=builder /home/node/app/dist /usr/share/nginx/html
 
 ENV NGINX_PORT=8080
