@@ -8,11 +8,30 @@ spec:
   type: LoadBalancer
   ports:
   - port: 80
-    targetPort: 80
+    targetPort: 8080
     protocol: TCP
     name: http
   selector:
     run: usquad
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-templates-config
+data:
+  default.conf.template: |-
+      server{
+        listen       8080;
+        server_name  localhost;
+        location / {
+            root   /usr/share/nginx/html;
+            index  index.html index.htm;
+        }
+        error_page 500 502 503 504  /50x.html;
+        location = /50x.html {
+            root  /usr/share/nginx/html;
+        }
+      }
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -30,6 +49,14 @@ spec:
     spec:
       containers:
       - name: usquad-web-ui
-        image: ghcr.io/cmcrobotics/microsquad-web-ui:latest
+        image: eu.gcr.io/qualified-star-312116/web-ui:latest
         ports:
-        - containerPort: 80
+        - containerPort: 8080
+          protocol: TCP
+        volumeMounts:
+          - name: nginx-templates-config-volume
+            mountPath: "/etc/nginx/templates"
+      volumes:
+        - name: nginx-templates-config-volume
+          configMap:
+            name: nginx-templates-config

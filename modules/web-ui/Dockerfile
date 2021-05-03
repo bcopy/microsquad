@@ -46,6 +46,7 @@ RUN apk update
 
 RUN chmod u=rwxt /var/cache/nginx /var/run /var/log/nginx /etc/nginx/conf.d || true
 RUN chown nginx  /var/cache/nginx /var/run /var/log/nginx /etc/nginx/conf.d || true
+RUN rm /etc/nginx/conf.d/default.conf
 
 COPY --from=builder /home/node/app/dist /usr/share/nginx/html
 
