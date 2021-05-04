@@ -1,4 +1,4 @@
 {
-    "MQTT_URI": "wss://microsquad.web.cern.ch/mqtt",
+    "MQTT_URI": "localhost:8883",
     "MQTT_CLIENT_ID":"clientID"
 }

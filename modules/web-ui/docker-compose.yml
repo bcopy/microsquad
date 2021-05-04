@@ -1,0 +1,9 @@
+version: "3.9"
+services:
+  web-ui:
+    build: .
+    ports: 
+      - "8000:8080"
+    volumes:
+      - ./tests/conf/nginx:/etc/nginx/templates
+      - ./tests/conf/usquad:/usr/share/nginx/html/conf/
