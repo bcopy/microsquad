@@ -1,0 +1,4 @@
+{
+    "MQTT_URI": "wss://microsquad.web.cern.ch/mqtt",
+    "MQTT_CLIENT_ID":"clientID"
+}
