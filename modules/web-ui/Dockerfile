@@ -57,7 +57,10 @@ ENV NGINX_HOSTNAME=localhost
 ENV NGINX_CONTEXT_PATH=/web-ui
 
 # # You can inject the JSON configuration file as config.json in this location
-# VOLUME /usr/share/nginx/html/conf/
+VOLUME /usr/share/nginx/html/conf/
+
+# nginx default.conf.template
+VOLUME "/etc/nginx/templates"
 USER nginx
 
 

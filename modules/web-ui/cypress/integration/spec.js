@@ -1,6 +1,6 @@
 describe('Usquad UI Test', () => {
     beforeEach(() => {
-        cy.visit('http://localhost:8000/');
+        cy.visit('/');
         cy.wait(100);
     })
 
