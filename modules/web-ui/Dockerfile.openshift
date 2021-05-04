@@ -15,9 +15,6 @@ RUN npm install --only=prod
 
 COPY --chown=node:node . .
 
-# Set production environment vars
-RUN mv .env.prod .env
-
 RUN npm run build
 
 # Fix asset loading
