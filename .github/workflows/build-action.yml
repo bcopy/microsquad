@@ -39,7 +39,7 @@ jobs:
 
             - name: Cypress Test
               run: |
-                cd ./modules/web-ui/tests
+                cd ./tests
                 docker-compose up -d
                 npm run cytest
 
