@@ -26,7 +26,7 @@ jobs:
               uses: namoshek/mosquitto-github-action@v1
               with:
                 version: '1.6'
-                ports: '1883:1883 8883:8883'
+                ports: '1883:1883 9001:9001'
                 certificates: ${{ github.workspace }}/modules/web-ui/.ci/tls-certificates
                 config: ${{ github.workspace }}/modules/web-ui/.ci/mosquitto.conf
                 container-name: 'mqtt'
