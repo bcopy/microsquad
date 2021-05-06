@@ -1,18 +1,45 @@
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: usquad-ingress
+  annotations:
+    kubernetes.io/ingress.class: "gce"
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /*
+        backend:
+          serviceName: usquad-internal-service
+          servicePort: 8080
+---
 apiVersion: v1
 kind: Service
 metadata:
-  name: usquad
-  labels:
-    run: usquad
+  name: usquad-internal-service
 spec:
-  type: LoadBalancer
+  type: NodePort
   ports:
-  - port: 80
+  - port: 8080
     targetPort: 8080
     protocol: TCP
     name: http
   selector:
     run: usquad
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mosquitto-internal-service
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 9001
+    targetPort: 9001
+    protocol: TCP
+    name: websockets
+  selector:
+    run: mosquitto
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -32,6 +59,57 @@ data:
             root  /usr/share/nginx/html;
         }
       }
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mosquitto-config
+data:
+  mosquitto.conf: |-
+    listener 1883
+    protocol mqtt
+          
+    listener 9001
+    protocol websockets
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: web-ui-config
+data:
+  config.json: |-
+    {
+            "MQTT_URI": "ws://34.117.10.180/mqtt",
+            "MQTT_CLIENT_ID": "web-ui-client"
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mosquitto
+spec:
+  selector:
+    matchLabels:
+      run: mosquitto
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: mosquitto
+    spec:
+      containers:
+        - name: mosquitto
+          image: eclipse-mosquitto:1.6
+          ports:
+            - containerPort: 9001
+              protocol: TCP
+          volumeMounts:
+            - name: mosquitto-config-volume
+              mountPath: /mosquitto/config
+      volumes:
+        - name: mosquitto-config-volume
+          configMap:
+            name: mosquitto-config
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -55,8 +133,13 @@ spec:
           protocol: TCP
         volumeMounts:
           - name: nginx-templates-config-volume
-            mountPath: "/etc/nginx/templates"
+            mountPath: /etc/nginx/templates
+          - name: web-ui-config-volume
+            mountPath: /usr/share/nginx/html/conf
       volumes:
         - name: nginx-templates-config-volume
           configMap:
             name: nginx-templates-config
+        - name: web-ui-config-volume
+          configMap:
+            name: web-ui-config
