@@ -3,25 +3,38 @@ kind: Ingress
 metadata:
   name: usquad-ingress
   annotations:
-    kubernetes.io/ingress.class: "gce"
+    # Use nginx ingress controller to use rewrites
+    # Installation guide: https://kubernetes.github.io/ingress-nginx/deploy/ 
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+    # Increase timeout for websocket connections 
+    # https://kubernetes.github.io/ingress-nginx/user-guide/miscellaneous/#websockets
+    # even though web-ui will attempt reconnect on connection close, 
+    # ensure timeout is higher than MQTT broker keepAlive
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "120"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "120"
 spec:
   rules:
-  - http:
+  - host: 35.189.115.151.nip.io 
+    http:
       paths:
-      - path: /*
+      - path: /ui/(.*)
         backend:
           serviceName: usquad-internal-service
-          servicePort: 8080
+          servicePort: 8080        
+      - path: /mqtt
+        backend:
+          serviceName: mosquitto-internal-service
+          servicePort: 9001
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: usquad-internal-service
 spec:
-  type: NodePort
+  type: ClusterIP
   ports:
   - port: 8080
-    targetPort: 8080
     protocol: TCP
     name: http
   selector:
@@ -32,10 +45,9 @@ kind: Service
 metadata:
   name: mosquitto-internal-service
 spec:
-  type: LoadBalancer
+  type: ClusterIP
   ports:
   - port: 9001
-    targetPort: 9001
     protocol: TCP
     name: websockets
   selector:
@@ -66,9 +78,6 @@ metadata:
   name: mosquitto-config
 data:
   mosquitto.conf: |-
-    listener 1883
-    protocol mqtt
-          
     listener 9001
     protocol websockets
 ---
@@ -79,7 +88,7 @@ metadata:
 data:
   config.json: |-
     {
-            "MQTT_URI": "ws://34.117.10.180/mqtt",
+            "MQTT_URI": "ws://35.189.115.151.nip.io/mqtt",
             "MQTT_CLIENT_ID": "web-ui-client"
     }
 ---
