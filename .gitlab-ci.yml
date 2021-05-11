@@ -7,7 +7,7 @@ Web UI docker image:
     script:
       - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
       - echo Building latest Jenkins Docker Image $CI_PROJECT_NAME v $JENKINS_VERSION
-      - /kaniko/executor --context $CI_PROJECT_DIR/modules/web-ui --dockerfile $CI_PROJECT_DIR/modules/web-ui/Dockerfile --destination $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
+      - /kaniko/executor --context $CI_PROJECT_DIR/modules/web-ui --dockerfile $CI_PROJECT_DIR/modules/web-ui/Dockerfile.openshift --destination $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
     only:
       - master
       - develop
