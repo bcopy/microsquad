@@ -3,6 +3,8 @@
 
 actor "Game Organiser" as Organiser
 actor Player
+
+participant "Game Manager" as Manager
 control Gateway
 database "Game Session" as Game
 queue Broker
@@ -14,19 +16,25 @@ activate Organiser
 Organiser -> Gateway : Start session
 activate Gateway
 
-Organiser -> Gateway : Send Game Logic
-
-
 activate Broker
 
 Gateway -> Game : Declare Game
-
 activate Game
 Gateway -> Broker : Declare namespace
-Gateway --> Organiser : Session Identifiers
 
-Organiser -> Web : Join Game Session Display
+Gateway --> Organiser : Admin Code
+
+Organiser -> Manager : Run Game
+activate Manager
+Manager --> Organiser : Audience Code
+Manager --> Gateway : Audience Code
+
+Manager -> Gateway : Send Game Logic
+
+Organiser -> Web : Join Game Admin Display
 activate Web
+Player --> Web : Join Game Audience Display
+
 Web -> Broker : Subscribe
 Organiser -> Player : Start
 activate Player
