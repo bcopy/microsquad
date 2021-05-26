@@ -9,9 +9,14 @@ queue Broker
 participant "Web Display" as Web
 
 activate Organiser
-Organiser -> Gateway : Start session
 
+
+Organiser -> Gateway : Start session
 activate Gateway
+
+Organiser -> Gateway : Send Game Logic
+
+
 activate Broker
 
 Gateway -> Game : Declare Game
@@ -20,7 +25,7 @@ activate Game
 Gateway -> Broker : Declare namespace
 Gateway --> Organiser : Session Identifiers
 
-Organiser -> Web : Display Game
+Organiser -> Web : Join Game Session Display
 activate Web
 Web -> Broker : Subscribe
 Organiser -> Player : Start
