@@ -1,5 +1,6 @@
 from microbit import display,Image,sleep, button_a, button_b, accelerometer, running_time
 
+
 import radio 
 
 SIMU = False
@@ -11,10 +12,10 @@ except ImportError:
   SIMU = True
   print("Could not import machine module, DEVICE ID : "+str(DEVID))
 
-radio.config(channel=12, group=1)
+radio.config(channel=12, group=1, length=128)
 radio.on()
 
-IMG_SEND = [(Image.ARROW_N * (i/4)) for i in range(4, -1, -1)]
+IMG_SEND = [(Image.ARROW_N * (i/3)) for i in range(3, -1, -1)]
 
 def _pop_head_or_none(arr):
     if arr and len(arr)>0:
@@ -108,29 +109,9 @@ def usquad_vote(tags, timestamp=None):
       if(votes_left > 0):
         display.show(str(votes_left), clear=False, wait=True)
         sleep(1500)
+        button_b.was_pressed()
         display.show(choices[choice], clear=False,wait=False)
   display.show(Image.TARGET)
-
-def usquad_buttons(tags = None, timestamp=None):
-  global incoming
-  button_a.was_pressed()
-  button_b.was_pressed()
-  display.show(Image.TRIANGLE)
-  stop = False
-  while not stop:
-    if button_a.was_pressed():
-      usquad_send("read_button",{"value":"a"})
-      display.show("a")
-    if button_b.was_pressed():
-      usquad_send("read_button",{"value":"b"})
-      display.show("b")
-    poll_messages()
-    if incoming is not None:
-      stop = True
-    else:
-      sleep(200)
-      display.show(Image.TRIANGLE)
-      
   
 usquad_methods = {
   'image'     : usquad_image,
@@ -138,7 +119,7 @@ usquad_methods = {
   'text'      : usquad_text,
   'vote'      : usquad_vote,
   'device_id' : usquad_device_id,
-  'buttons'   : usquad_buttons
+  #'buttons'   : usquad_buttons
 }
 incoming = None
   
@@ -148,7 +129,8 @@ def poll_messages():
   if SIMU == False:
     incoming = radio.receive()
   if button_a.was_pressed():
-    incoming = 'vote,value="99999:99999:99099:99999:99999;99999:55555:00000:55555:99999",duration=4000,votes=4'
+    incoming = 'vote,value=90009:09090:00900:09090:90009;00900:09090:90009:09090:00900;55555:50005:50005:50005:55555,duration=4000,votes=4'
+    #incoming = 'buttons'
   
 display.show(Image.TARGET)
 usquad_send("bonjour")

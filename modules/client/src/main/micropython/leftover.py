@@ -26,3 +26,26 @@
       #incoming = 'text,value="Show_me_the_money",clear=true,wait=true'
       #incoming = 'accel'
       #incoming = 'vote,value="99999:99999:99099:99999:99999;99999:55555:55055:55555:99999;55555:50005:00000:50005:55555",duration=4000,votes=4'
+
+
+def usquad_buttons(tags = None, timestamp=None):
+  global incoming
+  button_a.was_pressed()
+  button_b.was_pressed()
+  display.show(Image.TRIANGLE)
+  stop = False
+  while not stop:
+    if button_a.was_pressed():
+      usquad_send("read_button",{"value":"a"})
+      display.show("a")
+    if button_b.was_pressed():
+      usquad_send("read_button",{"value":"b"})
+      display.show("b")
+    poll_messages()
+    if incoming is not None:
+      stop = True
+    else:
+      sleep(200)
+      display.show(Image.TRIANGLE)
+      
+
