@@ -7,7 +7,7 @@ export class Billboard {
     geometry: THREE.PlaneGeometry;
     material: THREE.MeshBasicMaterial;
     height = 4.5;
-    position = new THREE.Vector3(0, 4, 10);
+    position = new THREE.Vector3(0, 5, 10);
     rotation = new THREE.Euler(0, Math.PI, 0);
 
     constructor(context: Context) {
@@ -31,6 +31,7 @@ export class Billboard {
         image.src = base64Image;
         let texture = new THREE.Texture();
         texture.image = image;
+
         image.onload = () => {
             texture.needsUpdate = true;
 
@@ -39,7 +40,7 @@ export class Billboard {
             // Create mesh
             this.geometry = new THREE.PlaneGeometry(this.height * image.width / image.height, this.height);
             this.material = new THREE.MeshBasicMaterial({
-                map: texture
+                map: texture,
             });
             this.mesh = new THREE.Mesh(this.geometry, this.material);
             this.mesh.visible = true;
