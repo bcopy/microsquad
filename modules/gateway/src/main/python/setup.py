@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
       # 'dotenv',
-      install_requires=[ 'wheel','influx_line_protocol>=0.1.4','cs20-microbitio==0.2', 'paho-mqtt==1.5.1'],
+      install_requires=[ 'wheel','influx_line_protocol>=0.1.4','cs20-microbitio==0.2', 'paho-mqtt==1.5.1', 'line-protocol-parser', 'Homie4'],
       extras_require={
          'test':['testfixtures','hbmqtt']
       },
