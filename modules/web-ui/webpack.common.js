@@ -7,6 +7,7 @@ const ASSET_PATH = process.env.ASSET_PATH || '/';
 module.exports = {
     entry: "./src/app.ts", 
     output: {
+        publicPath: "/",
         filename: "js/bundle.js",
     },
     resolve: {

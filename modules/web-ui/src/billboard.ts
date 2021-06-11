@@ -41,6 +41,7 @@ export class Billboard {
             this.geometry = new THREE.PlaneGeometry(this.height * image.width / image.height, this.height);
             this.material = new THREE.MeshBasicMaterial({
                 map: texture,
+                transparent: true
             });
             this.mesh = new THREE.Mesh(this.geometry, this.material);
             this.mesh.visible = true;
