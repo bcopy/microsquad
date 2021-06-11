@@ -1,0 +1,24 @@
+# Please edit the object below. Lines beginning with a '#' will be ignored,
+# and an empty file will abort the edit. If an error occurs while saving this file will be
+# reopened with the relevant failures.
+#
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: traefik
+    traefik.ingress.kubernetes.io/frontend-entry-points: http
+    traefik.ingress.kubernetes.io/rewrite-target: /$1
+  name: traefik-mosquitto
+spec:
+  rules:
+  - host: usquad.cern.ch
+    http:
+      paths:
+      - backend:
+          service:
+            name: mosquitto-service
+            port:
+              number: 9001
+        path: /mqtt
+        pathType: Prefix

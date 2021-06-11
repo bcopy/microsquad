@@ -1,0 +1,75 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: usquad-service
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8080
+    protocol: TCP
+    name: http
+  selector:
+    app: usquad
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-templates-config
+data:
+  default.conf.template: |-
+    server{
+      listen      8080;
+      server_name localhost;
+      location / {
+        root    /usr/share/nginx/html;
+        index   index.html index.htm;
+      }
+      error_page 500 502 503 504 /50x.html;
+      location = /50x.html {
+        root    /usr/share/nginx/html;
+      }
+    }
+---    
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: usquad-config
+data:
+  config.json: |-
+    {
+      "MQTT_URI": "ws://usquad.cern.ch/mqtt",
+      "MQTT_CLIENT_ID": "client-id"
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: usquad
+spec:
+  selector:
+    matchLabels:
+      app: usquad
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: usquad
+    spec:
+      containers:
+      - name: usquad-web-ui
+        image: ghcr.io/cmcrobotics/microsquad-web-ui:latest
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+        volumeMounts:
+          - name: nginx-templates-config-volume
+            mountPath: /etc/nginx/templates
+          - name: usquad-config-volume
+            mountPath: /usr/share/nginx/html/conf
+      volumes:
+        - name: nginx-templates-config-volume
+          configMap:
+            name: nginx-templates-config
+        - name: usquad-config-volume
+          configMap:  
+            name: usquad-config
