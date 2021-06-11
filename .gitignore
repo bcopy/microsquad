@@ -135,3 +135,6 @@ dmypy.json
 .vscode/
 .vscode/cpx.json
 modules/gateway/src/main/python/microsquad/portscan.cache
+
+# ignore virtual environments
+**/*-venv/*
