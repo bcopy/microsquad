@@ -3,6 +3,8 @@ from line_protocol_parser import parse_line, LineFormatError
 from homie.device_status import Device_Status
 from homie.node.property import property_string
 
+from .homie import Device_Gateway, Device_Terminal
+
 import logging
 
 from . import AbstractMapper
@@ -13,19 +15,20 @@ Homie V4 Mapper - converts incoming MQTT messages and outgoing Microbit radio me
 class HomieMapper(AbstractMapper):
 
     def __init__(self, homie_root_topic, mqtt_settings):
-        self.__homie_root_topic = homie_root_topic
+        self._homie_root_topic = homie_root_topic
 
-        """ mqtt_settings = {
-            'MQTT_BROKER' : 'your.mqtt.server',
-            'MQTT_PORT' : 1883,
-            'MQTT_SHARE_CLIENT' : True
-            }
-        """
-        self.__mqtt_settings = mqtt_settings
+        self._homie_settings = {
+            "topic": self._homie_root_topic,
+            "update_interval": 1
+        }
+        self._mqtt_settings = mqtt_settings
+        self._gateway = Device_Gateway(homie_settings=self._homie_settings,mqtt_settings=self._mqtt_settings)
+        self._terminals = []
 
-    def declare_device(self, device_name, device_type):
-        # Declare the device in homie hierarchy - node / property
-        pass
+    def declare_terminal_if_required(self):
+        
+        self._terminals.append()
+
 
     def map_to_mqtt(self, message):
         pass
