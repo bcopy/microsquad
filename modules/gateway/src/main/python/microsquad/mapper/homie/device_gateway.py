@@ -14,18 +14,19 @@ logger = logging.getLogger(__name__)
 
 
 class Device_Gateway(Device_Base):
-    __instances_count = 0
+    _instances_count = 0
+    _DEVICE_ID_PREFIX = "usquad-gateway"
 
     def __init__(
         self,
-        device_id="usquad-gateway",
+        device_id= _DEVICE_ID_PREFIX,
         name="MicroSquad Gateway",
         homie_settings=None,
         mqtt_settings=None
     ):
-        if device_id == "usquad-gateway":
-            Device_Gateway.__instances_count += 1
-            device_id = device_id+str(Device_Gateway.__instances_count)
+        if device_id == Device_Gateway._DEVICE_ID_PREFIX:
+            Device_Gateway._instances_count += 1
+            device_id = device_id+str(Device_Gateway._instances_count)
         super().__init__(device_id, name, homie_settings, mqtt_settings)
 
         self.node_scoreboard = Node_Base(self,id="scoreboard", name="Scoreboard", type_="scoreboard")
