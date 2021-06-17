@@ -5,7 +5,7 @@ import logging
 class AbstractMapper(metaclass=ABCMeta):
  
     @abstractmethod
-    def map_to_mqtt(self, message):
+    def map_from_mqtt(self, message):
         pass
     
     @abstractmethod

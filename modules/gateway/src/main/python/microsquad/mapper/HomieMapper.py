@@ -30,7 +30,12 @@ class HomieMapper(AbstractMapper):
         self._terminals.append()
 
 
-    def map_to_mqtt(self, message):
+    def map_from_mqtt(self, message):
+        # Interpret incoming MQTT update and create required devices
+        """
+        /player-manager/add
+        /player/manager/remove
+        """
         pass
     
     def map_from_microbit(self, message):
