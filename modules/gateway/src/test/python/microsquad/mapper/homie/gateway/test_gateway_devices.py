@@ -17,6 +17,8 @@ class SimpleTest(unittest.TestCase):
         self.assertIsNone(self.gateway.get_node("player-02"))
         self.gateway.player_manager.add_player("02")
         self.assertIsNotNone(self.gateway.get_node("player-02"))
+        self.assertIsNotNone(self.gateway.get_node("player-02").get_property("nickname"))
+        self.assertIsNotNone(self.gateway.get_node("player-02").get_property("skin"))
 
     def test_add_remove_teams(self):
         self.gateway.team_manager.add_team("blue")
