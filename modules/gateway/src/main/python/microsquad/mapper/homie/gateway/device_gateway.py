@@ -25,16 +25,21 @@ class Device_Gateway(Device_Base):
     ):
         super().__init__(device_id, name, homie_settings, mqtt_settings)
 
-        scoreboard = Node_Base(self,id="scoreboard", name="Scoreboard", type_="scoreboard")
-        self.add_node(scoreboard)
-        scoreboard.add_property(Property_String(node = scoreboard, id="score",name="score" ))
-        # scoreboard.update_score = self.update_score
+        self.scoreboard = Node_Base(self,id="scoreboard", name="Scoreboard", type_="scoreboard")
+        self.add_node(self.scoreboard)
+        self.scoreboard.add_property(Property_String(node = self.scoreboard, id="score",name="score" ))
 
         self.player_manager = Node_Player_Manager(self)
         self.add_node(self.player_manager)
 
         self.team_manager = Node_Team_Manager(self)
         self.add_node(self.team_manager)
-        
+
+        self.game = Node_Base(self,id="game", name="game", type_="game")
+        self.add_node(self.game)
+        self.game.add_property(Property_String(node = self.game, id="script",name="script" ))
+        self.game.add_property(Property_String(node = self.game, id="audience-code",name="audience-code" ))
+        self.game.add_property(Property_String(node = self.game, id="admin-code",name="admin-code" ))
+
     # def update_score(self,score):
     #     logger.debug("Score update {}".format(score))
