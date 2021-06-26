@@ -1,10 +1,12 @@
 from microbit import display,radio, sleep
 
 import logging
+
+from ..mapper.abstract_mapper import AbstractMapper
 from . import AbstractConnector
 
 class BitioConnector(AbstractConnector):
-    def __init__(self, mapper):
+    def __init__(self, mapper : AbstractMapper):
       self._queue = []
       self._mapper = mapper
       radio.config(length=200, channel=12, group=12)
@@ -24,12 +26,9 @@ class BitioConnector(AbstractConnector):
         if len(self._queue) > 0:
             outgoing_msg = self._queue.pop(0)
 
-            # Find out which device to send the message to ...
-
-            # 
-
             logging.info("Sending " + outgoing_msg.topic+" "+str(outgoing_msg.payload.decode('ascii')) +" (left "+str(len(self._queue))+")")
 
-            # Instead of broadcast, may need to send to only one device
+            # TODO : Change the radio config to target a particular group of devices ?
+
             radio.send(str(outgoing_msg.payload.decode('ascii')))
     
