@@ -11,7 +11,7 @@ except ImportError:
   SIMU = True
   print("Could not import machine module, DEVICE ID : "+str(DEVID))
 
-radio.config(channel=12, group=1)
+radio.config(channel=12, group=12)
 radio.on()
 
 IMG_SEND = [(Image.ARROW_N * (i/5)) for i in range(5, -1, -1)]
@@ -163,8 +163,13 @@ while True:
   while incoming is not None:
     meas,tags,stamp = ulp_parse(incoming)
     incoming = None
+    execute = True
+    if("dev_id" in tags.keys() and tags["dev_id"] != DEVID):
+      execute = False
     method = usquad_methods.get(meas, None)
-    if method is not None:
+    if method is None:
+      execute = False
+    if execute:
       method(tags,stamp)
 
   sleep(200)
