@@ -2,15 +2,17 @@
 import enum
 
 @enum.unique
-class MappingEventType(enum.Enum):
+class EventType(enum.Enum):
     BONJOUR = "bonjour"
     VOTE = "vote"
     ACCELERATOR = "accel"
     BUTTON = "button"
     TEMPERATURE = "temperature"
+    TERMINAL_BROADCAST = "terminal_broadcast"
+    TERMINAL_COMMAND = "terminal_command"
 
-class MappingEvent():
-    def __init__(self, event_type:MappingEventType, payload = None ) -> None:
+class MicroSquadEvent():
+    def __init__(self, event_type:EventType, payload = None ) -> None:
         self.__event_type = event_type
         self.__payload = payload
 
