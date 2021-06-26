@@ -7,7 +7,7 @@ from homie.node.node_base import Node_Base
 
 logger = logging.getLogger(__name__)
 
-class Node_Team(Node_Base):
+class NodeTeam(Node_Base):
     _instance_count = 1
 
     def __init__(

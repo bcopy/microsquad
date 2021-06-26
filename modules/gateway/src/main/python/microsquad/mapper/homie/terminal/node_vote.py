@@ -2,13 +2,12 @@ import logging
 
 from homie.node.property.property_string import Property_String
 from homie.node.property.property_datetime import Property_DateTime
+from homie.node.property.property_integer import Property_Integer
 from homie.node.node_base import Node_Base
 
 logger = logging.getLogger(__name__)
 
-class Node_Vote(Node_Base):
-    _instance_count = 1
-
+class NodeVote(Node_Base):
     def __init__(
         self,
         device,
@@ -20,6 +19,7 @@ class Node_Vote(Node_Base):
     ):
       super().__init__(device, id, name, type_, retain, qos)
 
-      self.add_property(Property_String(self,   id="choice",        name="choice"))
-      self.add_property(Property_DateTime(self, id="vote-last",   name="vote-last"))
+      self.add_property(Property_String(self,   id="choice-value",  name="choice value"))
+      self.add_property(Property_Integer(self,   id="choice-index", name="choice index", settable=False))
+      self.add_property(Property_DateTime(self, id="vote-last",     name="vote-last"))
       

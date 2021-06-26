@@ -16,7 +16,7 @@ from .node_info import Node_Info
 logger = logging.getLogger(__name__)
 
 
-class Device_Terminal(Device_Base):
+class DeviceTerminal(Device_Base):
     def __init__( self, device_id=None, name=None, homie_settings=None, mqtt_settings=None):
         super().__init__(device_id, name, homie_settings, mqtt_settings)
 

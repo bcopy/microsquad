@@ -5,9 +5,7 @@ from homie.node.node_base import Node_Base
 
 logger = logging.getLogger(__name__)
 
-class Node_Temperature(Node_Base):
-    _instance_count = 1
-
+class NodeTemperature(Node_Base):
     def __init__(
         self,
         device,

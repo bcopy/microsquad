@@ -1,4 +1,4 @@
-from microsquad.mapper.homie.gateway.device_gateway import Device_Gateway
+from microsquad.mapper.homie.gateway.device_gateway import DeviceGateway
 
 import unittest
 
@@ -8,7 +8,7 @@ class SimpleTest(unittest.TestCase):
             'MQTT_BROKER' : 'localhost',
             'MQTT_PORT' : 1883,
         }
-        self.gateway = Device_Gateway(mqtt_settings=mqtt_settings)
+        self.gateway = DeviceGateway(mqtt_settings=mqtt_settings)
         self.gateway.start()
 
     def test_add_player(self):

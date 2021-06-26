@@ -7,14 +7,19 @@ from homie.device_base import Device_Base
 from homie.node.property.property_string import Property_String
 from homie.node.node_base import Node_Base
 
-from .node_player_manager import Node_Player_Manager
+from .node_player_manager import NodePlayerManager
 
-from .node_team_manager import Node_Team_Manager
+from .node_team_manager import NodeTeamManager
 
 logger = logging.getLogger(__name__)
 
 
-class Device_Gateway(Device_Base):
+class DeviceGateway(Device_Base):
+    """
+    The Gateway device exposes properties of the microsquad gateway.
+
+    It can be used to read properties of the ongoing game, players and teams currently active.
+    """
     
     def __init__(
         self,
@@ -29,10 +34,10 @@ class Device_Gateway(Device_Base):
         self.add_node(self.scoreboard)
         self.scoreboard.add_property(Property_String(node = self.scoreboard, id="score",name="score" ))
 
-        self.player_manager = Node_Player_Manager(self)
+        self.player_manager = NodePlayerManager(self)
         self.add_node(self.player_manager)
 
-        self.team_manager = Node_Team_Manager(self)
+        self.team_manager = NodeTeamManager(self)
         self.add_node(self.team_manager)
 
         self.game = Node_Base(self,id="game", name="game", type_="game")
@@ -41,5 +46,3 @@ class Device_Gateway(Device_Base):
         self.game.add_property(Property_String(node = self.game, id="audience-code",name="audience-code" ))
         self.game.add_property(Property_String(node = self.game, id="admin-code",name="admin-code" ))
 
-    # def update_score(self,score):
-    #     logger.debug("Score update {}".format(score))

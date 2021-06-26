@@ -1,4 +1,4 @@
-from microsquad.mapper.homie.terminal.device_terminal import Device_Terminal
+from microsquad.mapper.homie.terminal.device_terminal import DeviceTerminal
 
 import unittest
 
@@ -11,7 +11,7 @@ class SimpleTest(unittest.TestCase):
         self.terminals = []
 
     def test_add_terminal(self):
-        terminal = Device_Terminal(device_id="terminal-01", name="Terminal 01", mqtt_settings=self.mqtt_settings)
+        terminal = DeviceTerminal(device_id="terminal-01", name="Terminal 01", mqtt_settings=self.mqtt_settings)
         self.terminals.append(terminal)
         self.terminals[0].get_node("button-a").get_property("pressed").value = True
         self.assertTrue(self.terminals[0].get_node("button-a").get_property("pressed").value)

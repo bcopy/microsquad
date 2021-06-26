@@ -6,9 +6,7 @@ from homie.node.node_base import Node_Base
 
 logger = logging.getLogger(__name__)
 
-class Node_Display(Node_Base):
-    _instance_count = 1
-
+class NodeDisplay(Node_Base):
     def __init__(
         self,
         device,
