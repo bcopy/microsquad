@@ -6,6 +6,10 @@ from homie.device_base import Device_Base
 
 from homie.node.property.property_string import Property_String
 from homie.node.node_base import Node_Base
+from rx3 import Observable
+
+from ..terminal.device_terminal import DeviceTerminal
+from ....event import MicroSquadEvent,EventType
 
 from .node_player_manager import NodePlayerManager
 
@@ -23,6 +27,7 @@ class DeviceGateway(Device_Base):
     
     def __init__(
         self,
+        event_source : Observable,
         device_id= "usquad-gateway",
         name="MicroSquad Gateway",
         homie_settings=None,
@@ -30,19 +35,49 @@ class DeviceGateway(Device_Base):
     ):
         super().__init__(device_id, name, homie_settings, mqtt_settings)
 
-        self.scoreboard = Node_Base(self,id="scoreboard", name="Scoreboard", type_="scoreboard")
-        self.add_node(self.scoreboard)
-        self.scoreboard.add_property(Property_String(node = self.scoreboard, id="score",name="score" ))
+        self._scoreboard = Node_Base(self,id="scoreboard", name="Scoreboard", type_="scoreboard")
+        self.add_node(self._scoreboard)
+        self._scoreboard.add_property(Property_String(node = self._scoreboard, id="score",name="score" ))
 
-        self.player_manager = NodePlayerManager(self)
-        self.add_node(self.player_manager)
+        self._player_manager = NodePlayerManager(self)
+        self.add_node(self._player_manager)
 
-        self.team_manager = NodeTeamManager(self)
-        self.add_node(self.team_manager)
+        self._team_manager = NodeTeamManager(self)
+        self.add_node(self._team_manager)
 
-        self.game = Node_Base(self,id="game", name="game", type_="game")
-        self.add_node(self.game)
-        self.game.add_property(Property_String(node = self.game, id="script",name="script" ))
-        self.game.add_property(Property_String(node = self.game, id="audience-code",name="audience-code" ))
-        self.game.add_property(Property_String(node = self.game, id="admin-code",name="admin-code" ))
+        self._terminals = {}
 
+        self._game = Node_Base(self,id="game", name="game", type_="game")
+        self.add_node(self._game)
+        self._game.add_property(Property_String(node = self._game, settable= True, set_value =self.update_script, id="script",name="script" ))
+        self._game.add_property(Property_String(node = self._game, id="audience-code",name="audience-code" ))
+        self._game.add_property(Property_String(node = self._game, id="admin-code",name="admin-code" ))
+        self._game.add_property(Property_String(node = self._game, settable= True, set_value =self.update_broadcast, id="broadcast",name="broadcast" ))
+
+        self._event_source = event_source
+        if self._event_source is None:
+            raise ValueError("Gateway must be passed an event source.")
+    
+    def add_terminal(self, device_id : str):
+        if(device_id not in self.terminals.keys()):
+            terminal = DeviceTerminal(event_source = self._event_source,device_id = "terminal-"+device_id, name="Terminal "+device_id, homie_settings=self.homie_settings, mqtt_settings=self.mqtt_settings)
+            terminal.get_node("info").get_property("terminal-id").value = device_id
+            terminal.get_node("info").get_property("serial-number").value = device_id
+            logging.info("Added new terminal {}".format(device_id))
+            self._terminals[device_id] = terminal
+
+    @property
+    def terminals(self):
+        return self._terminals
+
+    def update_script(self, new_script):
+        """
+        A new gaming script has been sent, we need to reset the game session, and execute it.
+        """
+        pass
+
+    def update_broadcast(self, command):
+        """
+        A new broadcast command has been sent, we need to propagate it to all terminals
+        """
+        self._event_source.on_next(MicroSquadEvent(EventType.BROADCAST_COMMAND,command))
