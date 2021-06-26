@@ -119,10 +119,10 @@ def usquad_buttons(tags = None, timestamp=None):
   stop = False
   while not stop:
     if button_a.was_pressed():
-      usquad_send("read_button_a")
+      usquad_send("read_button",{"button":"a"})
       display.show("a")
     if button_b.was_pressed():
-      usquad_send("read_button_b") 
+      usquad_send("read_button",{"button":"b"})
       display.show("b")
     poll_messages()
     if incoming is not None:
