@@ -2,7 +2,7 @@ from microsquad.mapper.homie.terminal.device_terminal import DeviceTerminal
 
 import unittest
 
-class SimpleTest(unittest.TestCase):
+class TestTerminalDevice(unittest.TestCase):
     def setUp(self):
         self.mqtt_settings = {
             'MQTT_BROKER' : 'localhost',

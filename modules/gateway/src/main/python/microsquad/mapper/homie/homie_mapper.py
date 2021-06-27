@@ -17,11 +17,14 @@ class HomieMapper(AbstractMapper):
     def __init__(self, gateway, event_source) -> None:
         super.__init__(event_source)
         self._gateway = gateway
+        
 
     def map_from_mqtt(self, message):
         """ With a Homie implementation, we are not mapping low-level MQTT messages
             but rather update calls made on properties.
             This is therefore a no-op implementation.
+            Instead, we implement a RxPy subscriber, and pass on all command events
+            to the connector.
         """
         pass
         
@@ -74,3 +77,4 @@ class HomieMapper(AbstractMapper):
              logging.exception("Unexpected error on line message : %s",message)
 
 
+homie_mapper

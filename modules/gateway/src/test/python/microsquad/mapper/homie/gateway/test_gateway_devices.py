@@ -2,7 +2,7 @@ from microsquad.mapper.homie.gateway.device_gateway import DeviceGateway
 
 import unittest
 
-class SimpleTest(unittest.TestCase):
+class TestGatewayDevice(unittest.TestCase):
     def setUp(self):
         mqtt_settings = {
             'MQTT_BROKER' : 'localhost',
