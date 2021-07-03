@@ -1,6 +1,9 @@
+from microsquad.event import MicroSquadEvent,EventType
 from microsquad.mapper.homie.gateway.device_gateway import DeviceGateway
 
 import unittest
+
+from rx3.subject import Subject
 
 class TestGatewayDevice(unittest.TestCase):
     def setUp(self):
@@ -8,8 +11,8 @@ class TestGatewayDevice(unittest.TestCase):
             'MQTT_BROKER' : 'localhost',
             'MQTT_PORT' : 1883,
         }
-        self.gateway = DeviceGateway(mqtt_settings=mqtt_settings)
-        self.gateway.start()
+        self.event_source = Subject()
+        self.gateway = DeviceGateway(event_source=self.event_source,mqtt_settings=mqtt_settings)
 
     def test_add_player(self):
         self.gateway._player_manager.add_player("01")
@@ -38,6 +41,14 @@ class TestGatewayDevice(unittest.TestCase):
         self.assertEqual(self.gateway._team_manager.get_property("list-players").value,'{"orange":["susan","roger"]}')
         self.gateway._team_manager.remove_player("orange:susan")
         self.assertEqual(self.gateway._team_manager.get_property("list-players").value,'{"orange":["roger"]}')
+        
+    def test_broadcast_event(self):
+        received_events: MicroSquadEvent = []
+        subscriber = self.event_source.subscribe(on_next = lambda evt: received_events.append(evt) )
+        self.gateway.update_broadcast("buttons")
+        self.assertEqual(1,len(received_events))
+        self.assertEqual(EventType.TERMINAL_BROADCAST, received_events[0].event_type)
+        self.assertIsNone(received_events[0].device_id)
         
 
 if __name__ == '__main__':

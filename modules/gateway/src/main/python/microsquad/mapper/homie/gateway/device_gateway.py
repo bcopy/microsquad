@@ -84,4 +84,4 @@ class DeviceGateway(Device_Base):
         """
         A new broadcast command has been sent, we need to propagate it to all terminals
         """
-        self._event_source.on_next(MicroSquadEvent(EventType.BROADCAST_COMMAND,command))
+        self._event_source.on_next(MicroSquadEvent(EventType.TERMINAL_BROADCAST,None,command))
