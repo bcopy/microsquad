@@ -1,4 +1,5 @@
 from line_protocol_parser import parse_line, LineFormatError
+from rx3 import Observable
 
 from .gateway.device_gateway import DeviceGateway
 
@@ -13,7 +14,7 @@ class HomieMapper(AbstractMapper):
     """
     Homie V4 Mapper - converts incoming MQTT and Microbit radio messages to Homie V4 devices, nodes and properties.
     """
-    def __init__(self, gateway: DeviceGateway, event_source) -> None:
+    def __init__(self, gateway: DeviceGateway, event_source: Observable) -> None:
         super().__init__(event_source)
         self._gateway = gateway
         
