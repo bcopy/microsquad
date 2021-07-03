@@ -41,14 +41,3 @@ class AbstractConnector(metaclass=ABCMeta):
 
             if should_exit():
                 run = False
-            else:
-                self._reconnect_wait()
-
-                if should_exit():
-                    run = False
-                # else:
-                #     try:
-                #         self.reconnect()
-                #     except (socket.error, OSError, WebsocketConnectionError):
-                #         self._easy_log(
-                #             MQTT_LOG_DEBUG, "Connection failed, retrying")
