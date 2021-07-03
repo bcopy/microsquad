@@ -35,6 +35,9 @@ class DeviceGateway(Device_Base):
     ):
         super().__init__(device_id, name, homie_settings, mqtt_settings)
 
+        # Keep track of mqtt settings to instantiate Terminal devices
+        self._mqtt_settings = mqtt_settings
+
         self._scoreboard = Node_Base(self,id="scoreboard", name="Scoreboard", type_="scoreboard")
         self.add_node(self._scoreboard)
         self._scoreboard.add_property(Property_String(node = self._scoreboard, id="score",name="score" ))
@@ -57,10 +60,11 @@ class DeviceGateway(Device_Base):
         self._event_source = event_source
         if self._event_source is None:
             raise ValueError("Gateway must be passed an event source.")
+
     
     def add_terminal(self, device_id : str):
         if(device_id not in self.terminals.keys()):
-            terminal = DeviceTerminal(event_source = self._event_source,device_id = "terminal-"+device_id, name="Terminal "+device_id, homie_settings=self.homie_settings, mqtt_settings=self.mqtt_settings)
+            terminal = DeviceTerminal(event_source = self._event_source,device_id = "terminal-"+str(device_id), name="Terminal "+device_id, homie_settings=self.homie_settings, mqtt_settings=self._mqtt_settings)
             terminal.get_node("info").get_property("terminal-id").value = device_id
             terminal.get_node("info").get_property("serial-number").value = device_id
             logging.info("Added new terminal {}".format(device_id))
