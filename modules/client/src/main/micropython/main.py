@@ -54,11 +54,8 @@ def ulp_serialize(measurement, tags=None, timestamp=None):
     return result
 
 def usquad_send(measurement, tags= None, timestamp=None):
-  tagz = {"dev_id":DEVID}
-  if tags is not None:
-    tagz.update(tags)
-  msg = ulp_serialize(measurement, tagz, timestamp)
-  radio.send(msg)
+  msg = ulp_serialize(measurement, tags, timestamp)
+  radio.send(msg+" dev_id="+DEVID)
   if SIMU == True:
     print("Sending : "+msg)
   
