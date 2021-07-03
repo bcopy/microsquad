@@ -3,11 +3,11 @@ import logging
 from homie.node.property.property_string import Property_String
 from homie.node.node_base import Node_Base
 
-from .node_player import Node_Player
+from .node_player import NodePlayer
 
 logger = logging.getLogger(__name__)
 
-class Node_Player_Manager(Node_Base):
+class NodePlayerManager(Node_Base):
 
     def __init__(self, device):
       super().__init__(device, id="player-manager", name="Player Manager", type_="player_manager", retain=True, qos=1)
@@ -32,7 +32,7 @@ class Node_Player_Manager(Node_Base):
                 - id:name:nickname
                 - or empty (random UUID)
         """
-        self.device.add_node(Node_Player(self.device,id="player-"+identifier, name=identifier))
+        self.device.add_node(NodePlayer(self.device,id="player-"+identifier, name=identifier))
         self.players.append(identifier)
         self.get_property("list").value = ",".join(self.players)
         logger.info("Player Added : {}".format(identifier))

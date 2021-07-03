@@ -3,13 +3,13 @@ import logging
 from homie.node.property.property_string import Property_String
 from homie.node.node_base import Node_Base
 
-from .node_team import Node_Team
+from .node_team import NodeTeam
 
 import json
 
 logger = logging.getLogger(__name__)
 
-class Node_Team_Manager(Node_Base):
+class NodeTeamManager(Node_Base):
 
     def __init__(self, device):
       super().__init__(device, id="team-manager", name="Team Manager", type_="team_manager", retain=True, qos=1)
@@ -30,7 +30,7 @@ class Node_Team_Manager(Node_Base):
 
     def add_team(self,team):
         if(not team in self.teams):
-            self.device.add_node(Node_Team(self.device,id="team-"+team, name=team))
+            self.device.add_node(NodeTeam(self.device,id="team-"+team, name=team))
             self.teams.append(team)
             if(team not in self.teams_to_players.keys()):
                 self.teams_to_players[team] = []
