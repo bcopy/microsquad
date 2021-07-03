@@ -1,8 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-      # 'dotenv',
-      install_requires=[ 'wheel','influx_line_protocol>=0.1.4','cs20-microbitio==0.2', 'paho-mqtt==1.5.1', 'line-protocol-parser', 'RxPy3', 'Homie4'],
+      install_requires=[ 'wheel','influx_line_protocol>=0.1.4','cs20-microbitio==0.2', 'paho-mqtt==1.5.1', 'line-protocol-parser', 'RxPy3', 'Homie4', 'python-dotenv'],
       extras_require={
          'test':['testfixtures','hbmqtt']
       },
@@ -28,9 +27,10 @@ setup(
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3 :: Only",
-        "Programming Language :: Python :: 3.4",
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
         "Topic :: Education",
         "Topic :: Software Development",
       ],
