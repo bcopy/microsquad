@@ -5,9 +5,9 @@ from rx3 import Observable
 class AbstractMapper(metaclass=ABCMeta):
     """
     Maps communication events between terminals and MQTT.
-    Events are propagated using an RxPy event source.
+    Events are propagated using an RxPy observable.
     """
-    def __init__(self, event_source) -> None:
+    def __init__(self, event_source: Observable) -> None:
         self._event_source = event_source
  
     @property

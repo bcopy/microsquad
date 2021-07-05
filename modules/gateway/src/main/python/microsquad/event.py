@@ -12,9 +12,10 @@ class EventType(enum.Enum):
     TERMINAL_COMMAND = "terminal_command"
 
 class MicroSquadEvent():
-    def __init__(self, event_type:EventType, payload = None ) -> None:
+    def __init__(self, event_type:EventType, device_id=None, payload = None ) -> None:
         self.__event_type = event_type
         self.__payload = payload
+        self.__device_id = device_id
 
     @property
     def event_type(self):
@@ -23,3 +24,7 @@ class MicroSquadEvent():
     @property
     def payload(self):
         return self.__payload
+
+    @property
+    def device_id(self):
+        return self.__device_id

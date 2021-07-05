@@ -37,7 +37,7 @@ class DeviceTerminal(Device_Base):
             raise ValueError("Terminal must be passed an event source.")
 
     def update_command(self, command):
-        self._event_source.on_next(MicroSquadEvent(EventType.TERMINAL_COMMAND,command))
+        self._event_source.on_next(MicroSquadEvent(EventType.TERMINAL_COMMAND,payload=command))
 
    
 

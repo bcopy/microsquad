@@ -3,8 +3,11 @@ from microbit import display,radio, sleep
 import logging
 
 from ..mapper.abstract_mapper import AbstractMapper
-from . import AbstractConnector
+from .abstract_connector import AbstractConnector
 
+"""
+Simple Bitio connector implementation that uses the radio to receive messages.
+"""
 class BitioConnector(AbstractConnector):
     def __init__(self, mapper : AbstractMapper):
       self._queue = []
@@ -25,10 +28,6 @@ class BitioConnector(AbstractConnector):
 
         if len(self._queue) > 0:
             outgoing_msg = self._queue.pop(0)
-
             logging.info("Sending " + outgoing_msg.topic+" "+str(outgoing_msg.payload.decode('ascii')) +" (left "+str(len(self._queue))+")")
-
-            # TODO : Change the radio config to target a particular group of devices ?
-
             radio.send(str(outgoing_msg.payload.decode('ascii')))
     

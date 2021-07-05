@@ -2,17 +2,14 @@ import paho.mqtt.client as mqtt
 
 import logging
 
-from rx3 import operators,Observable
+from rx3.subject import Subject
 
 from ...mapper.homie.gateway.device_gateway import DeviceGateway
 from ...mapper.homie.homie_mapper import HomieMapper
 from ...connector.bitio_connector import BitioConnector
 
-class HomieGateway:
-    MQTT_SETTINGS = {
-        'MQTT_BROKER' : 'localhost',
-        'MQTT_PORT' : 1883,
-    }
+class HomieBitioGateway:
+    
 
     """
     MicroSquad Gateway MQTT Homie implementation.
@@ -21,13 +18,12 @@ class HomieGateway:
     Remote method calls are implemented as Homie settable properties.
     Events are propagated using RxPy.
     """
-    def __init__(self):
-        self._event_source = Observable.create()
-        self._homie_settings = {
-            "topic": self._homie_root_topic,
-            "update_interval": 1
-        }
-        self._gateway = DeviceGateway(event_source = self._event_source, homie_settings=self._homie_settings,mqtt_settings=HomieGateway.MQTT_SETTINGS)
+    def __init__(self, homie_settings, mqtt_settings, event_source):
+        
+        self._event_source = event_source
+        self._homie_settings = homie_settings
+        self._mqtt_settings = mqtt_settings
+        self._gateway = DeviceGateway(event_source = self._event_source, homie_settings=self._homie_settings,mqtt_settings=self._mqtt_settings)
         self._mapper = HomieMapper(self._gateway, self._event_source)
         self._connector = BitioConnector(self._mapper)
 
