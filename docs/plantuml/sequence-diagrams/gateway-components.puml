@@ -1,0 +1,16 @@
+@startuml
+
+[Mapper] 
+[Connector]
+[Gateway] <<microbit>>
+[Terminal] <<microbit>>
+[MQTT Client] <<paho>> as mqtt
+Radio -> Gateway
+Radio --> Terminal
+USB -left-> Gateway
+USB --> Connector
+RxPy -left-> Mapper
+RxPy -up-> Connector
+Homie <- Mapper
+Homie -left-> mqtt
+@enduml
