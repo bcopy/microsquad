@@ -1,16 +1,22 @@
 @startuml
 
-[Mapper] 
-[Connector]
-[Gateway] <<microbit>>
-[Terminal] <<microbit>>
+frame "Connector Scheduler"{
+    [Connector] <<bitio>>
+    [Gateway] <<microbit>>
+    [Terminal] <<microbit>>
+    USB -left-> Gateway
+    USB --> Connector
+    Radio <-> Gateway
+    Radio <--> Terminal
+}
 [MQTT Client] <<paho>> as mqtt
-Radio -> Gateway
-Radio --> Terminal
-USB -left-> Gateway
-USB --> Connector
-RxPy -left-> Mapper
-RxPy -up-> Connector
-Homie <- Mapper
-Homie -left-> mqtt
+
+frame "Mapper scheduler"{
+    [Mapper] 
+    RxPy -right-> Mapper
+    RxPy -up-> Connector
+Mapper -> Homie
+}
+Homie --> mqtt
+
 @enduml
