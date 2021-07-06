@@ -4,7 +4,10 @@ import logging
 import threading
 
 class AbstractConnector(metaclass=ABCMeta):
- 
+    """
+    Thread-based implementation of a connector loop.
+    """
+
     @abstractmethod
     def queue(self, message):
         pass

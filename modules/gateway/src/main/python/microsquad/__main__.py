@@ -1,7 +1,9 @@
 from dotenv import load_dotenv
+import time
 from homie.device_base import HOMIE_SETTINGS
 
-from .gateway.mqtt.homie_bitio_gateway import HomieBitioGateway
+
+from microsquad.gateway.mqtt.homie_bitio_gateway import HomieBitioGateway
 
 import rx3
 
@@ -20,3 +22,6 @@ HOMIE_SETTINGS = {
 event_source = rx3.subject.Subject()
 gateway = HomieBitioGateway(HOMIE_SETTINGS, MQTT_SETTINGS, event_source)
 gateway.start()
+
+while True:
+    time.sleep(50)
