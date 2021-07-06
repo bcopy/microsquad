@@ -55,5 +55,6 @@ deactivate Player
 Organiser -> Gateway : End Game
 Gateway -> Game : Close Session
 Gateway -> Broker : Release namespace
+deactivate Game
 Broker -> Web : Display Game Stats
 @enduml
