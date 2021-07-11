@@ -1,5 +1,6 @@
-@startuml
+@startuml Gateway components diagram
 
+title Gateway components diagram
 frame "Connector Scheduler"{
     [Connector] <<bitio>>
     [Gateway] <<microbit>>
