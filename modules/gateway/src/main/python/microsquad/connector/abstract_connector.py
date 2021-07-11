@@ -10,6 +10,9 @@ class AbstractConnector(metaclass=ABCMeta):
 
     @abstractmethod
     def queue(self, message):
+        """
+        Queue a message for radio distribution
+        """
         pass
     
     @abstractmethod
