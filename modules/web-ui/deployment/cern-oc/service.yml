@@ -1,0 +1,314 @@
+apiVersion: v1
+kind: Template
+metadata:
+  name: web-ui-service-template
+objects:
+  - apiVersion: v1
+    kind: Service
+    metadata:
+      labels:
+        app: usquad
+      name: web-ui
+      namespace: ${NAMESPACE}
+      selfLink: /api/v1/namespaces/${NAMESPACE}/services/web-ui
+    spec:
+      ports:
+        - name: 8080-tcp
+          port: 8080
+          protocol: TCP
+          targetPort: 8080
+      selector:
+        deploymentconfig: web-ui-dc
+      sessionAffinity: None
+      type: ClusterIP
+  - apiVersion: route.openshift.io/v1
+    kind: Route
+    metadata:
+      labels:
+        app: usquad
+      annotations:
+        router.cern.ch/network-visibility: Internet
+      name: web-ui-route
+      namespace: ${NAMESPACE}
+    spec:
+      host: ${NAMESPACE}.web.cern.ch
+      path: ${CONTEXT_PATH}
+      port:
+        targetPort: 8080-tcp
+      tls:
+        insecureEdgeTerminationPolicy: Redirect
+        termination: edge
+      to:
+        kind: Service
+        name: web-ui
+        weight: 100
+      wildcardPolicy: None
+  - apiVersion: route.openshift.io/v1
+    kind: Route
+    metadata:
+      labels:
+        app: usquad
+      annotations:
+        router.cern.ch/network-visibility: Internet
+      name: mosquitto-websocket-route
+      namespace: ${NAMESPACE}
+    spec:
+      host: ${NAMESPACE}.web.cern.ch
+      path: /mqtt
+      port:
+        targetPort: 9001-tcp
+      tls:
+        insecureEdgeTerminationPolicy: Redirect
+        termination: edge
+      to:
+        kind: Service
+        name: mosquitto
+        weight: 100
+      wildcardPolicy: None
+  - apiVersion: v1
+    kind: Service
+    metadata:
+      labels:
+        app: usquad
+      name: mosquitto
+      namespace: ${NAMESPACE}
+      selfLink: /api/v1/namespaces/${NAMESPACE}/services/mosquitto
+    spec:
+      ports:
+        - name: 9001-tcp
+          port: 9001
+          protocol: TCP
+          targetPort: 9001
+      selector:
+        deploymentconfig: mosquitto-dc
+      sessionAffinity: None
+      type: ClusterIP
+  - kind: ConfigMap
+    apiVersion: v1
+    metadata:
+      name: mosquitto-config
+      namespace: ${NAMESPACE}
+    data: 
+      mosquitto.conf: |-
+        # Config file for mosquitto
+        retry_interval 20
+        sys_interval 10
+        max_inflight_messages 40
+        max_queued_messages 200
+        queue_qos0_messages false
+        message_size_limit 0
+        allow_zero_length_clientid true
+        allow_duplicate_messages false
+        # Logging
+        connection_messages true
+        log_dest stderr
+        log_dest stdout
+        # log_dest file /mosquitto/log/mosquitto.log
+        log_type error
+        log_type warning
+        log_type notice
+        log_type information
+        log_type all
+        log_type debug
+        log_timestamp true
+
+        listener 1883
+        protocol mqtt
+
+        listener 9001
+        protocol websockets 
+  - apiVersion: apps.openshift.io/v1
+    kind: DeploymentConfig
+    metadata:
+      labels:
+        app: usquad
+      name: mosquitto-dc
+      namespace: ${NAMESPACE}
+      selfLink: >-
+        /apis/apps.openshift.io/v1/namespaces/${NAMESPACE}/deploymentconfigs/mosquitto
+    spec:
+      replicas: 1
+      selector:
+        app: usquad
+        deploymentconfig: mosquitto-dc
+      strategy:
+        recreateParams:
+          timeoutSeconds: 240
+        resources:
+          requests:
+            cpu: 100m
+            memory: 200Mi
+        type: Recreate
+      template:
+        metadata:
+          labels:
+            app: usquad
+            deploymentconfig: mosquitto-dc
+        spec:
+          containers:
+            - image: >-
+                eclipse-mosquitto:1.6
+              imagePullPolicy: IfNotPresent
+              name: mosquitto
+              ports:
+                - containerPort: 9001
+                  protocol: TCP
+              resources: 
+                requests:
+                  cpu: 200m
+                  memory: 128Mi
+                limits:
+                  cpu: 500m
+                  memory: 256Mi
+              terminationMessagePath: /dev/termination-log
+              terminationMessagePolicy: File
+              volumeMounts:
+                - mountPath: /mosquitto/config/
+                  name: mosquitto-config-volume
+                  readOnly: true
+          volumes:
+            - name: mosquitto-config-volume
+              configMap:
+                name: mosquitto-config
+            - name: mosquitto-log
+              
+          dnsPolicy: ClusterFirst
+          restartPolicy: Always
+          schedulerName: default-scheduler
+          securityContext: { }
+          terminationGracePeriodSeconds: 30
+  - kind: ConfigMap
+    apiVersion: v1
+    metadata:
+      name: web-ui-config
+      namespace: ${NAMESPACE}
+    data: 
+      config.json: |-
+          {
+              "MQTT_URI": "wss://${NAMESPACE}.web.cern.ch/mqtt",
+              "MQTT_CLIENT_ID":"web-ui-client"
+          }
+  - kind: ConfigMap
+    apiVersion: v1
+    metadata:
+      name: nginx-templates-config
+      namespace: ${NAMESPACE}
+    data: 
+      default.conf.template: |-
+          server{
+            listen       ${NGINX_PORT} default_server;
+            server_name  ${NGINX_HOSTNAME};
+            root   /usr/share/nginx/html;
+            
+            location = ${NGINX_CONTEXT_PATH} {
+                rewrite ^ ${NGINX_CONTEXT_PATH}/index.html permanent;
+            }
+
+            location ~ ${NGINX_CONTEXT_PATH}/.* {
+                rewrite ^${NGINX_CONTEXT_PATH}/(.*)$ /$1 last;
+                index  index.html index.htm;
+
+            }
+          }
+  - apiVersion: apps.openshift.io/v1
+    kind: DeploymentConfig
+    metadata:
+      labels:
+        app: usquad
+      name: web-ui-dc
+      namespace: ${NAMESPACE}
+      selfLink: >-
+        /apis/apps.openshift.io/v1/namespaces/${NAMESPACE}/deploymentconfigs/web-ui
+    spec:
+      replicas: 1
+      selector:
+        app: usquad
+        deploymentconfig: web-ui-dc
+      strategy:
+        recreateParams:
+          timeoutSeconds: 240
+        resources:
+          requests:
+            cpu: 100m
+            memory: 200Mi
+        type: Recreate
+      template:
+        metadata:
+          labels:
+            app: usquad
+            deploymentconfig: web-ui-dc
+        spec:
+          containers:
+            - image: >-
+                gitlab-registry.cern.ch/cmcrobotics/microsquad:develop
+              imagePullPolicy: Always
+              name: web-ui
+              livenessProbe:
+                failureThreshold: 5
+                httpGet:
+                  path: ${CONTEXT_PATH}
+                  port: 8080
+                  scheme: HTTP
+                initialDelaySeconds: 10
+                periodSeconds: 60
+                successThreshold: 1
+                timeoutSeconds: 5
+              readinessProbe:
+                failureThreshold: 5
+                httpGet:
+                  path: ${CONTEXT_PATH}
+                  port: 8080
+                  scheme: HTTP
+                initialDelaySeconds: 5
+                periodSeconds: 15
+                successThreshold: 3
+                timeoutSeconds: 15
+              env:
+                - name: NGINX_CONTEXT_PATH
+                  value: "${CONTEXT_PATH}"
+                - name:  NGINX_PORT
+                  value: "8080"
+                - name:  NGINX_HOSTNAME
+                  value: "${NAMESPACE}.web.cern.ch"
+              ports:
+                - containerPort: 8080
+                  protocol: TCP
+              resources: 
+                requests:
+                  cpu: 200m
+                  memory: 256Mi
+                limits:
+                  cpu: 500m
+                  memory: 512Mi
+              volumeMounts:
+                - name: httpd-run-volume
+                  mountPath: "/run"
+                - name: nginx-templates-config-volume
+                  mountPath: "/etc/nginx/templates"
+                - name: web-ui-config-volume
+                  mountPath: "/usr/share/nginx/html/conf"
+              terminationMessagePath: /dev/termination-log
+              terminationMessagePolicy: File
+          dnsPolicy: ClusterFirst
+          restartPolicy: Always
+          schedulerName: default-scheduler
+          securityContext: { }
+          terminationGracePeriodSeconds: 30
+          volumes:
+            - name: httpd-run-volume
+              emptyDir: {}
+            - name: web-ui-config-volume
+              configMap:
+                name: web-ui-config
+            - name: nginx-templates-config-volume
+              configMap:
+                name: nginx-templates-config
+
+parameters:
+  - name: NAMESPACE
+    description: Website namespace (hostname)
+    required: true
+  - name: CONTEXT_PATH
+    description: Web UI Context Path
+    value: "/ui"
+
