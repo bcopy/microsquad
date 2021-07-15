@@ -1,4 +1,6 @@
--e .
+-e src/main/python
+pytest
+pytest-cov
 wheel
 influx_line_protocol>=0.1.4
 cs20-microbitio==0.2
@@ -7,5 +9,3 @@ line-protocol-parser
 RxPy3
 Homie4
 python-dotenv
-pytest
-pytest-cov
