@@ -10,6 +10,12 @@ class EventType(enum.Enum):
     TEMPERATURE = "temperature"
     TERMINAL_BROADCAST = "terminal_broadcast"
     TERMINAL_COMMAND = "terminal_command"
+    TERMINAL_DISCOVERED = "terminal_discovered"
+    GAME_DISCOVERED = "game_discovered"
+    PLAYER_DISCOVERED = "player_discovered"
+    
+    def equals(self, string):
+       return self.value == string
 
 class MicroSquadEvent():
     def __init__(self, event_type:EventType, device_id=None, payload = None ) -> None:

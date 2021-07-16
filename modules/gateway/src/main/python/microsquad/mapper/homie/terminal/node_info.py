@@ -22,5 +22,5 @@ class NodeInfo(Node_Base):
       self.add_property(Property_String(self, id="terminal-id",   name="Terminal ID"))
       self.add_property(Property_String(self, id="serial-number", name="Serial Number"))
       self.add_property(Property_DateTime(self, id="heartbeat", name="Heartbeat"))
-      self.add_property(Property_String(self, id="command", name="command", settable=True, set_value=command_handler, value="", retained = False))
+      self.add_property(Property_String(self, id="command", name="Command", settable=True, set_value=command_handler, value="", retained = False))
       

@@ -1,19 +1,32 @@
 
 import logging
-import paho.mqtt.client as mqtt_client
-import asyncio
-import threading
-import functools
+from homieclient import HomieClient
+
+from rx3 import Observable
+
+from ...event import MicroSquadEvent,EventType
 
 logger = logging.getLogger(__name__)
 
 
 class HomieController():
-    def __init__(self,mqtt_settings,homie_settings) -> None:
+
+
+    """
+    A controller that relies on homieclient to obtain and cache property updates, as well
+    as issue callbacks on discovery events.
+    """
+    def __init__(self,mqtt_settings,homie_settings, event_source : Observable = None) -> None:
         self.mqtt_settings = mqtt_settings
-        self.mqtt_client = None
+        self.homie_settings = {"HOMIE_PREFIX":"homie/"}
+        self.homie_settings.update(homie_settings)
+        self.homie_client = None
         self.mqtt_transport = "tcp"
-        self.mqtt_protocol = mqtt_client.MQTTv311
+        self.event_source = event_source
+        self._known_terminals = []
+        self._known_games = []
+        self._known_players = []
+
 
     def connect(self):
         logger.debug(
@@ -21,109 +34,43 @@ class HomieController():
                 self.mqtt_settings["MQTT_BROKER"], self.mqtt_settings["MQTT_CLIENT_ID"]
             )
         )
-        
-        if self.mqtt_settings["MQTT_PROTOCOL"]: 
-            if(self.mqtt_settings["MQTT_PROTOCOL"] in [mqtt_client.MQTTv31, mqtt_client.MQTTv311, mqtt_client.MQTTv5]):
-                self.mqtt_protocol = self.mqtt_settings["MQTT_PROTOCOL"]
-            else:
-                logger.info("MQTT protocol {} unsupported ".format(self.mqtt_settings["MQTT_PROTOCOL"]))
+        """
+        HomieClient limitations :
+          * No Websockets support (WS_PATH, MQTT_TRANSPORT, TLS SUPPORT)
+          * Does not use asyncio futures
+        """
+        self.homie_client = HomieClient(server=self.mqtt_settings["MQTT_BROKER"], prefix=self.homie_settings["HOMIE_PREFIX"])
+        self.homie_client._on_property_updated = self._on_property_updated
 
-        if self.mqtt_settings["MQTT_TRANSPORT"]:  
-            self.mqtt_transport = self.mqtt_settings["MQTT_TRANSPORT"]
-    
-        if self.mqtt_settings["MQTT_WS_PATH"]:  
-            self.mqtt_transport = "websockets"
+        self.homie_client.connect()
 
-        self.mqtt_client = mqtt_client.Client(client_id=self.mqtt_settings["MQTT_CLIENT_ID"], transport=self.mqtt_transport, protocol=self.mqtt_protocol)
-        self.mqtt_connected = False 
-        self.mqtt_client.on_connect = self._on_connect
-        self.mqtt_client.on_message = self._on_message
-        self.mqtt_client.on_disconnect = self._on_disconnect
-        
-        if self.mqtt_settings["MQTT_USERNAME"]:
-            self.mqtt_client.username_pw_set(
-                self.mqtt_settings["MQTT_USERNAME"],
-                password=self.mqtt_settings["MQTT_PASSWORD"],
-            )
+    def property_updated(self,node, property, value:str):
+        # Check if it's a terminal device
+        # If so, issue callbacks and rxpy events
+        if(node.device.id.startswith("terminal-") and node.device.id not in self._known_terminals):
+            self._known_terminals.append(node.device.id)
+            # Terminal event
+            if(self.event_source is not None):
+                logger.debut("New terminal detected : {}".format(node.device["device-id"]))
+                self.event_source.on_next(MicroSquadEvent(EventType.TERMINAL_DISCOVERED,node.device["device-id"]))
+            # Forward the event to any RxPy observers
+            self.event_source.on_next(MicroSquadEvent(EventType[str(node.name+"_"+property)],node.device["device-id"],value))
 
-        if self.mqtt_settings["MQTT_WS_PATH"]:  
-            self.mqtt_client.ws_set_options(path=self.mqtt_settings["MQTT_WS_PATH"])
+        if(node.name.startswith("game") ):
+            if(property == "audience-code" and value not in self._known_games):
+                self._known_games.append(value)
+                # Terminal event
+                if(self.event_source is not None):
+                    logger.debut("New game started : {}".format(value))
+                    self.event_source.on_next(MicroSquadEvent(EventType.GAME_DISCOVERED,payload=value))
+                    # TODO : Reset all known players ? all known terminals ?
+            # TODO: Forward the property update to any listeners
 
-        if self.mqtt_settings["MQTT_USE_TLS"]:
-            self.mqtt_client.tls_set()
-
-        try:
-            self.mqtt_client.connect(
-                self.mqtt_settings["MQTT_BROKER"],
-                port=self.mqtt_settings["MQTT_PORT"],
-                keepalive=self.mqtt_settings["MQTT_KEEPALIVE"],
-            )
-            self.mqtt_client.loop_start()
-        except Exception as e:
-            logger.warning("Homie Controller MQTT client unable to connect to Broker {}".format(e))
-
-
-        def start():
-            try:
-                asyncio.set_event_loop(self.event_loop)
-                logger.info ('Starting Homie Controller asyincio publish loop forever')
-                self.event_loop.run_forever()
-                logger.warning ('Homie Controller Event publish loop stopped')
-            except Exception as e:
-                logger.error ('Error in Homie Controller event loop {}'.format(e))
-
-        self.event_loop = asyncio.new_event_loop()
-
-        logger.info("Starting Homie Controller MQTT publish thread")
-        self._ws_thread = threading.Thread(target=start, args=())
-
-        self._ws_thread.daemon = True
-        self._ws_thread.start()
-
-    def publish(self, topic, payload, retain, qos):
-        logger.debug(
-            "MQTT publish topic: {}, payload: {}, retain {}, qos {}".format(
-                topic, payload, retain, qos
-            )
-        )
-        def publish():
-            self.mqtt_client.publish(topic, payload, retain=retain, qos=qos)
-
-        self.event_loop.call_soon_threadsafe(functools.partial(publish))
-
-    def _on_connect(self, client, userdata, flags, rc):
-        if rc > 0: 
-            rc_text = mqtt_client.connack_string(rc)
-            logger.fatal("Homie Controller MQTT - connection: Result code {} {}, Flags {}".format(rc, rc_text,flags))
-        else:
-            logger.debug("Homie Controller MQTT - connection successful : Result code {}, Flags {}".format(rc, flags))
-
-
-        # TODO : Subscribe to device / node / property patterns under given Homie prefix
-
-        #
-        ###########
-
-        self.mqtt_connected = rc == 0
-
-    def _on_message(self, client, userdata, msg):
-        topic = msg.topic
-        payload = msg.payload.decode("utf-8")
-
-        # Split the topic into device / node / property
-
-        # Invoke matching handlers
-        # * on_new_terminal  (known terminal ?)
-        # * on_new_player (known player ?)
-        # * on_new_game (known game ?)
-        # * on_update_terminal_property (validate terminal name and node ?)
-
-
-    def _on_disconnect(self, client, userdata, rc):
-        self.mqtt_connected = False 
-        if rc > 0: 
-            rc_text = mqtt_client.error_string(rc)
-
-            logger.warning(
-                "Homie Controller MQTT - unexpected disconnection  {} {} Result Code : {} {}".format(client, userdata, rc, rc_text)
-            )
+        if(node.name.startswith("player-") ):
+            if(property == "terminal-id" and value not in self._known_players):
+                self._known_games.append(value)
+                if(self.event_source is not None):
+                    logger.debut("New player discovered : {}".format(value))
+                    self.event_source.on_next(MicroSquadEvent(EventType.PLAYER_DISCOVERED,payload=value))
+            # TODO: Forward the property update to any listeners
+            

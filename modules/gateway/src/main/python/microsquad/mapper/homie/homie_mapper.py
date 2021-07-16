@@ -40,14 +40,14 @@ class HomieMapper(AbstractMapper):
             # No-op if the terminal is already known to the gateway
             self._gateway.add_terminal(dev_id)
             # Interpret measurement, Convert fields and tags to Homie device update
-            if measurement == "bonjour":
+            if measurement == EventType.BONJOUR.value:
                 self.event_source.on_next(MicroSquadEvent(EventType.BONJOUR,dev_id,msg["tags"].copy()))
             elif measurement.startswith("read_"):
                 # e.g. "read_button"
                 read,verb = measurement.split("_",1)
                 
                 terminal = self._gateway.terminals[dev_id]
-                if verb == "button":
+                if verb == EventType.BUTTON.value:
                     # Button A or B ?
                     button_id = "button-"+msg["tags"]["button"]
                     button_node = terminal.get_node(button_id)
@@ -61,16 +61,17 @@ class HomieMapper(AbstractMapper):
 
                     # TODO : Set a timer to reset the pressed state later
                     # Could be easily done with RxPy
-                elif verb == "accel":
-                    terminal.get_node("accelerator").get_property("x").value=int(msg["tags"]["x"])
-                    terminal.get_node("accelerator").get_property("y").value=int(msg["tags"]["y"])
-                    terminal.get_node("accelerator").get_property("z").value=int(msg["tags"]["z"])
+                elif verb == EventType.ACCELERATOR.value:
+                    terminal.get_node("accel").get_property("x").value=int(msg["tags"]["x"])
+                    terminal.get_node("accel").get_property("y").value=int(msg["tags"]["y"])
+                    terminal.get_node("accel").get_property("z").value=int(msg["tags"]["z"])
+                    terminal.get_node("accel").get_property("value").value="{x},{y},{z}".format(**msg["tags"])
                     self.event_source.on_next(MicroSquadEvent(EventType.ACCELERATOR,dev_id,msg["tags"].copy()))
-                elif verb == "vote":
+                elif verb == EventType.VOTE.value:
                     terminal.get_node("vote").get_property("choice-value").value=(msg["tags"]["value"])
                     terminal.get_node("vote").get_property("choice-index").value=int(msg["tags"]["index"])
                     self.event_source.on_next(MicroSquadEvent(EventType.VOTE,dev_id,msg["tags"].copy()))
-                elif verb == "temperature":
+                elif verb == EventType.TEMPERATURE.value:
                     terminal.get_node("temperature").get_property("temperature").value=int(msg["tags"]["value"])
                     self.event_source.on_next(MicroSquadEvent(EventType.TEMPERATURE,dev_id,msg["tags"].copy()))
         except LineFormatError as lfe:
