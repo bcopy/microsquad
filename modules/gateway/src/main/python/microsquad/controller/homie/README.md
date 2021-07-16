@@ -9,12 +9,12 @@ Callbacks are handled by RxPy observables.
 
 ## Supported reactive event types
 
-* on_new_terminal
-* on_new_player
-* on_new_game
-* on_update_terminal_property
+* terminal_discovered
+* player_discovered
+* game_discovered
+* terminal property update : vote,accel,button,temperature (c.f. Microsquad event types)
 
-## Supported remote calls
+## Supported settable property updates
 
 * update_terminal_property(terminal_id,property_name,property_value)
 * update_gateway_property(gateway_id,property_name,property_value)
