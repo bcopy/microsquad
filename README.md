@@ -20,14 +20,21 @@ Messages are exchanged using the Influx line protocol (with a small custom parse
 # Dependencies
 
 For the **uSquad** Gateway :
-* Python3
+* Python 3.8+
 * [https://github.com/AdventuresInMinecraft/Bitio](https://github.com/AdventuresInMinecraft/bitio)
-* A Microbit running the bitio firmware
-* [Line Protocol parser for Python](https://pypi.org/project/influx-line-protocol/)
 
 For the **uSquad** clients :
 * The provided **uSquad** firmware to upload on each Microbit.
 
+For the **uSquad** Web Interface :
+* The spectacular [Kenney Character Assets](https://kenney.itch.io/kenney-character-assets) under Creative Commons Zero
+
 # How to use it
+
+## Flash the Microbits
+
+## Start the Gateway
+
+## Connect to the administration web interface
 
 # How to develop
