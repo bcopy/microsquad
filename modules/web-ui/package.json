@@ -20,15 +20,12 @@
     "webpack-merge": "^5.7.3"
   },
   "devDependencies": {
-    "cypress": "^6.5.0",
     "webpack-dev-server": "^3.11.2"
   },
   "scripts": {
     "build": "webpack --config webpack.prod.js",
-    "start": "webpack-dev-server --port 8000 --config webpack.dev.js",
-    "cytest": "cypress run",
-    "cygui": "cypress open"
+    "start": "webpack-dev-server --port 8000 --config webpack.dev.js"
   },
-  "author": "",
-  "license": "ISC"
+  "author": "Lucas Van Mol",
+  "license": "GPLv3"
 }
