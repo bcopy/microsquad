@@ -17,6 +17,7 @@ export class Player extends UpdateObject {
     static skins = {};
 
     id : string;
+    order: number;
     team : Team;
     model : Object3D;
     model_loaded : boolean = false;
@@ -26,10 +27,11 @@ export class Player extends UpdateObject {
     private _skin : string;
     private _accessory : string;
 
-    constructor (id : string, team: Team) {
+    constructor (id : string, team: Team, order : number = 0) {
         super();
         this.id = id;
         this.team = team;
+        this.order = order;
         team.addPlayer(this);
 
         this.nametag = new TextBox3D(id, new Vector3(0, 0, 0));

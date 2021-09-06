@@ -47,8 +47,11 @@ export class PlayerManager {
         for (var teamName in this.teams) {
             var len = this.teams[teamName].players.length;
             if (len !== 0) {
+                // Sort players by order within the team
+                let sortedPlayers = this.teams[teamName].players.sort((obj1,obj2)=>(obj1.order >= obj2.order?1:-1));
+                //let sortedPlayers = this.teams[teamName].players
                 // Set player positions
-                this.teams[teamName].players.forEach(player => {
+                sortedPlayers.forEach(player => {
                     player.rotation = new Vector3(0, -angle - Math.PI/2, 0);
                     player.position = new Vector3(Math.cos(angle), 0, Math.sin(angle)).multiplyScalar(this.circleRadius);
                     player.scale = scale;
