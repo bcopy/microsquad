@@ -22,6 +22,9 @@ class TestGatewayDevice(unittest.TestCase):
         assert self.gateway.get_node("player-02") is not None
         assert self.gateway.get_node("player-02").get_property("nickname") is not None
         assert self.gateway.get_node("player-02").get_property("skin") is not None
+        assert self.gateway.get_node("player-02").get_property("order") is not None
+        assert self.gateway.get_node("player-01").get_property("order").value == 0
+        assert self.gateway.get_node("player-02").get_property("order").value == 1
 
     def test_add_remove_teams(self):
         self.gateway._team_manager.add_team("blue")
