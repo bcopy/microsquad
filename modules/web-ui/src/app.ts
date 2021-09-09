@@ -6,26 +6,57 @@ import { Context, UpdateObject } from "./updateObject";
 import envConfig from './config';
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { Player } from "./player";
-import Accessories from './accessories.json';
 import { Billboard } from "./billboard";
 
 var config = envConfig;
 
-var mqttclient;
+var assetsConfig;
+
+var mqttTopicRoot;
+
+var mqttClient;
+
+var mqttClientId;
+
+var sessionCode = "session-default";
 
 const loader = new THREE.FileLoader();
 
-function startMqttSubscriptions(){
 
-    mqttclient = new MQTTClient(
+function startMqttSubscriptions(){
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(window.location.search);
+    sessionCode = urlParams.get('sc') ?? "default-session";
+    const urlClientId = urlParams.get('ci');
+    if (urlClientId != null) {
+        mqttClientId = "microsquad-web:" + urlClientId; // if specified in the URL, retain the same client ID
+    }
+    else {
+        mqttClientId = "microsquad-web:" + Math.random().toString(36).substr(2, 5); // unique client ID to prevent reconnect loop
+    }
+
+    mqttClient = new MQTTClient(
         config.MQTT_URI,
-        config.MQTT_CLIENT_ID + ":" + Math.random().toString(36).substr(2, 5), // unique clientID to prevent reconnect loop
+        mqttClientId,
         onMessageArrived,
-        onMQTTConnect,
-        onMQTTConnectionLost,
+        onMqttConnect,
+        onMqttConnectionLost,
     );
 }
 
+var assetsInitialized:boolean = false;
+
+loader.load('assets/assets.json',
+    function ( data ) {
+        assetsConfig = JSON.parse(<string>data);
+        initializeAssetsSettings();
+    },
+    undefined,
+    // onError callback
+    function ( err ) {
+        console.error( 'Could not load assets JSON configuration at conf/assets/assets.json' );
+    }
+)
 
 //load a text file and output the result to the console
 loader.load(
@@ -68,6 +99,16 @@ document.body.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xf5ca6e);
+const ambientColor = 0xFFFFFF;
+const ambiIntensity = 0.8;
+const ambilight = new THREE.AmbientLight(ambientColor, ambiIntensity);
+
+const dirColor = 0xffffbb;
+const dirIntensity = 2.0;
+const dirlight = new THREE.DirectionalLight(dirColor, dirIntensity);
+const helper = new THREE.DirectionalLightHelper(dirlight);
+
+
 
 const clock = new THREE.Clock();
 var objects: UpdateObject[] = [];
@@ -124,115 +165,119 @@ manager.onError = (url) => {
     console.log(`Error loading: ${url}`);
 };
 
-///////////////// SKIN TEXTURES //////////////////
-
-var texLoader = new THREE.TextureLoader(manager);
-
-let skin_files = ['alienA.png', 'alienB.png', 'animalA.png', 'animalB.png', 'animalBaseA.png', 'animalBaseB.png', 'animalBaseC.png', 'animalBaseD.png', 'animalBaseE.png', 'animalBaseF.png', 'animalBaseG.png', 'animalBaseH.png', 'animalBaseI.png', 'animalBaseJ.png', 'animalC.png', 'animalD.png', 'animalE.png', 'animalF.png', 'animalG.png', 'animalH.png', 'animalI.png', 'animalJ.png', 'astroFemaleA.png', 'astroFemaleB.png', 'astroMaleA.png', 'astroMaleB.png', 'athleteFemaleBlue.png', 'athleteFemaleGreen.png', 'athleteFemaleRed.png', 'athleteFemaleYellow.png', 'athleteMaleBlue.png', 'athleteMaleGreen.png', 'athleteMaleRed.png', 'athleteMaleYellow.png', 'businessMaleA.png', 'businessMaleB.png', 'casualFemaleA.png', 'casualFemaleB.png', 'casualMaleA.png', 'casualMaleB.png', 'cyborg.png', 'fantasyFemaleA.png', 'fantasyFemaleB.png', 'fantasyMaleA.png', 'fantasyMaleB.png', 'farmerA.png', 'farmerB.png', 'militaryFemaleA.png', 'militaryFemaleB.png', 'militaryMaleA.png', 'militaryMaleB.png', 'racerBlueFemale.png', 'racerBlueMale.png', 'racerGreenFemale.png', 'racerGreenMale.png', 'racerOrangeFemale.png', 'racerOrangeMale.png', 'racerPurpleFemale.png', 'racerPurpleMale.png', 'racerRedFemale.png', 'racerRedMale.png', 'robot.png', 'robot2.png', 'robot3.png', 'survivorFemaleA.png', 'survivorFemaleB.png', 'survivorMaleA.png', 'survivorMaleB.png', 'zombieA.png', 'zombieB.png', 'zombieC.png'];
-let skin_directory = "assets/skins/";
-
-let playerSkins = {};
-skin_files.forEach(file => {
-    let map = texLoader.load(skin_directory + file);
-    map.encoding = THREE.sRGBEncoding;
-    map.flipY = false;
-    playerSkins[file.split(".")[0]] = map;
-});
-
-///////////// CHARACTER & ANIMATIONS /////////////
-
-const asset_url = "assets/characterMediumAllAnimations.glb"; 
-
 // Animations in gltf.animations that need to be looped
-const loopedAnimations = ["CrouchIdle", "CrouchWalk", "Idle", "RacingIdle", "Run", "Walk", "Jump"]
-
 interface AnimationInfo {
     animation : THREE.AnimationClip,
     loop : boolean,
 }
 
 const gltfLoader = new GLTFLoader(manager);
-gltfLoader.load(asset_url, ( gltf ) => {
 
-    Player.gltf = gltf;
+const asset_url = "assets/characterMediumAllAnimations.glb"; 
+var playerSkins = {};
+var loopedAnimations = [];
+var accessories = {};
 
-    gltf.animations.forEach(anim => {
+///////////// CHARACTER & ANIMATIONS /////////////
+function initializeAssetsSettings(){
+    ///////////////// SKIN TEXTURES //////////////////
 
-        let animInfo : AnimationInfo = {
-            animation : anim,
-            loop : loopedAnimations.includes(anim.name),
-        };
+    var texLoader = new THREE.TextureLoader(manager);
 
-        Player.animations[anim.name] = animInfo;
+    let skin_names = assetsConfig.skins;
 
+    let playerSkins = {};
+    skin_names.forEach(skin => {
+        let map = texLoader.load("assets/skins/" + skin +".png");
+        map.encoding = THREE.sRGBEncoding;
+        map.flipY = false;
+        playerSkins[skin] = map;
     });
 
-});
+    loopedAnimations = assetsConfig.animations.attitudes;
 
-for (var accessory in Accessories) {
-    let url = `assets/accessories/${accessory}.glb`
-    gltfLoader.load(url, (gltf) => {
-        let filename = url.split("/").pop();
-        let accessoryName = filename.split(".")[0];
-        Accessories[accessoryName].scene = gltf.scene;
-    });
-}
-manager.onLoad = () => {
-    Player.accessories = Accessories;
-    Player.skins = playerSkins;
-}
+    gltfLoader.load(asset_url, ( gltf ) => {
 
-///////////////////////////////////////////// LIGHTING /////////////////////////////////////////////
-
-// Ambient Light
-const ambientColor = 0xFFFFFF;
-const ambiIntensity = 0.8;
-const ambilight = new THREE.AmbientLight(ambientColor, ambiIntensity);
-ambilight.visible = true;
-scene.add(ambilight);
-
-// Directional light
-const dirColor = 0xffffbb;
-const dirIntensity = 2.0;
-const dirlight = new THREE.DirectionalLight(dirColor, dirIntensity);
-dirlight.position.set(0, 10, 0);
-dirlight.target.position.set(2, 4, 6);
-scene.add(dirlight);
-scene.add(dirlight.target);
-const helper = new THREE.DirectionalLightHelper(dirlight);
-dirlight.visible = true;
-helper.visible = false;
-scene.add(helper);
-
-////////////////////////////////////// RENDERING & ANIMATION ///////////////////////////////////////
-
-window.addEventListener('resize', onWindowResize, false);
-function onWindowResize() {
-    // recalculate camera zoom
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    render();
-}
-
-var animate = function () {
-    requestAnimationFrame(animate);
-
-    var delta = clock.getDelta();
-    controls.update();
-
-    objects.forEach(obj => {
-        obj.update(delta);
+        Player.gltf = gltf;
+    
+        gltf.animations.forEach(anim => {
+    
+            let animInfo : AnimationInfo = {
+                animation : anim,
+                loop : loopedAnimations.includes(anim.name),
+            };
+    
+            Player.animations[anim.name] = animInfo;
+    
+        });
+    
     });
 
-    render();
-};
+    for (var accessory in assetsConfig.accessories) {
+        let url = `assets/accessories/${accessory}.glb`
+        gltfLoader.load(url, (gltf) => {
+            let filename = url.split("/").pop();
+            let accessoryName = filename.split(".")[0];
+            accessories[accessoryName] = assetsConfig.accessories[accessoryName]
+            accessories[accessoryName].scene = gltf.scene;
+        });
+    }
+    manager.onLoad = () => {
+        Player.accessories = assetsConfig.accessories;
+        Player.skins = playerSkins;
+    }
 
-function render() {
-    renderer.render(scene, camera);
+    setupThreeJsScene();
 }
-animate();
 
+
+
+function setupThreeJsScene(){
+
+    ///////////////////////////////////////////// LIGHTING /////////////////////////////////////////////
+
+    // Ambient Light
+    ambilight.visible = true;
+    scene.add(ambilight);
+
+    // Directional light
+    dirlight.position.set(0, 10, 0);
+    dirlight.target.position.set(2, 4, 6);
+    scene.add(dirlight);
+    scene.add(dirlight.target);
+    dirlight.visible = true;
+    helper.visible = false;
+    scene.add(helper);
+
+    ////////////////////////////////////// RENDERING & ANIMATION ///////////////////////////////////////
+
+    window.addEventListener('resize', onWindowResize, false);
+    function onWindowResize() {
+        // recalculate camera zoom
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        render();
+    }
+
+    var animate = function () {
+        requestAnimationFrame(animate);
+
+        var delta = clock.getDelta();
+        controls.update();
+
+        objects.forEach(obj => {
+            obj.update(delta);
+        });
+
+        render();
+    };
+
+    function render() {
+        renderer.render(scene, camera);
+    }
+    animate();
+}
 
 ///////////////////////////////////////// COMMAND HANDLING /////////////////////////////////////////
 
@@ -399,16 +444,19 @@ function commandHandler(topic, msg) {
     }   
 }
 
-function onMQTTConnect() {
-    console.log("Connected to " + mqttclient.uri);
-    mqttclient.subscribe("players/#");
-    mqttclient.subscribe("teams/#");
-    mqttclient.subscribe("billboard/#");
+function onMqttConnect() {
+    console.log("Connected to " + mqttClient.uri);
+    let subscriptionRoot:string;
+    if(config.MQTT_TOPIC_ROOT != null){
+        mqttTopicRoot = config.MQTT_TOPIC_ROOT
+    }
+    subscriptionRoot = mqttTopicRoot +"/"+sessionCode+"/#";
+    mqttClient.subscribe(subscriptionRoot);
     subButton.disabled = false;
     pubButton.disabled = false;
 }
 
-function onMQTTConnectionLost(response) {
+function onMqttConnectionLost(response) {
     if (response.errorCode !== 0) {
         console.error("Connection lost: " + response.errorMessage);
         subButton.disabled = true;
@@ -419,10 +467,10 @@ function onMQTTConnectionLost(response) {
 function _btnPublish() {
     let topic = (<HTMLInputElement>document.getElementById("pub-topic")).value;
     let payload = (<HTMLInputElement>document.getElementById("pub-payload")).value;
-    mqttclient.publish(topic, payload);
+    mqttClient.publish(topic, payload);
 }
 
 function _btnSubscribe() {
     let topic = (<HTMLInputElement>document.getElementById("sub-topic")).value;
-    mqttclient.subscribe(topic);
+    mqttClient.subscribe(topic);
 }
