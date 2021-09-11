@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { Subject } from 'rxjs';
-import { MQTTClient } from "./mqtt";
+import { MQTTClient, MqttMicrosquadEventType,MqttUpdateEvent } from "./mqtt";
 import { PlayerManager } from './playerManager';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { Context, UpdateObject } from "./updateObject";
@@ -11,19 +11,20 @@ import { Billboard } from "./billboard";
 
 var config = envConfig;
 
-var assetsConfig;
+var assetsConfig : any;
 
-var mqttTopicRoot;
+var mqttTopicRoot : string;
 
-var mqttClient;
+var mqttClient :MQTTClient;
 
-var mqttClientId;
+var mqttClientId : string;
 
-const mqttSubject : Subject<any> = new Subject();
+const playerSubject : Subject<MqttUpdateEvent> = new Subject();
+const teamSubject : Subject<MqttUpdateEvent> = new Subject();
+const billboardSubject : Subject<MqttUpdateEvent> = new Subject();
 
 var sessionCode = "session-default";
 
-var playerManager = new PlayerManager();
 
 var playerStates = new Map();
 var teamStates = new Map();
@@ -95,10 +96,6 @@ subButton.addEventListener('click', () => { _btnSubscribe() } );
 var pubButton : HTMLButtonElement = <HTMLButtonElement>document.getElementById("publish-button");
 pubButton.addEventListener('click', () => { _btnPublish() } );
 
-// Connect the playerManager to MQTT update events
-mqttSubject.subscribe(playerManager.observer);
-
-
 
 /////////////////////////////////////////// SCENE SETUP ////////////////////////////////////////////
 
@@ -152,6 +149,11 @@ var context : Context = {
     objList: objects,
 };
 UpdateObject.context = context;
+
+var playerManager = new PlayerManager();
+
+// Connect the playerManager to MQTT update events
+playerSubject.subscribe(playerManager.observer);
 
 var addPlayerButton : HTMLButtonElement = <HTMLButtonElement>document.getElementById("add-player");
 addPlayerButton.addEventListener('click', () => { playerManager.addPlayer("Player:"+ Math.random().toString(36).substr(2, 5)) });
@@ -451,21 +453,28 @@ function commandHandler(incomingTopic, value) {
             topicParts[1].startsWith(TEAM_DEVICE_PREFIX)) {
             let devicePrefix : string;
             let stateMap : Map<string,any>;
+            let propertyName : string;
+            let eventType : MqttMicrosquadEventType;
+            let subject: Subject<MqttUpdateEvent>;
             if (topicParts[1].startsWith(PLAYER_DEVICE_PREFIX)) {
                 devicePrefix = PLAYER_DEVICE_PREFIX;
                 stateMap = playerStates;
+                eventType = MqttMicrosquadEventType.PLAYER_UPDATE;
+                subject = playerSubject;
             } else if (topicParts[1].startsWith(TEAM_DEVICE_PREFIX)) {
                 devicePrefix = TEAM_DEVICE_PREFIX;
                 stateMap = teamStates;
+                eventType = MqttMicrosquadEventType.TEAM_UPDATE;
+                subject = teamSubject;
             }
             if (devicePrefix != null) {
-                let deviceId = topicParts[1].substring(devicePrefix.length);
+                let deviceId = topicParts[1].substring(devicePrefix.length+1);
                 let propertyName = topicParts[2];
                 let state = stateMap.get(deviceId) ?? new Map();
                 state.set(propertyName, value);
                 stateMap.set(deviceId, state);
 
-                // mqttSubject.next()
+                subject.next(new MqttUpdateEvent(eventType, deviceId,propertyName, value));
             }
         }
         //

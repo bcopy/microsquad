@@ -2,6 +2,7 @@ import { Player } from "./player";
 import { Vector3 } from "three";
 import { Team } from "./team";
 import { Observer} from "rxjs";
+import { MqttMicrosquadEventType, MqttUpdateEvent } from "./mqtt";
 
 export class PlayerManager {
     players: { [name: string]: Player } = {};
@@ -14,7 +15,7 @@ export class PlayerManager {
     arcDistTeams: number = 5;          // arc distance between adjacent teams
 
     observer = {
-        next: evt => console.log("new update "+evt),
+        next: (event: MqttUpdateEvent) => console.log("new update "+event.id+" "+event.property),
         error: err => console.log("Error "+err)
     };
 

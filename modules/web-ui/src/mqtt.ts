@@ -52,9 +52,24 @@ export class MQTTClient {
     }
 }
 
-export interface MqttUpdateEvent {
-    type: string
-    property: string
-    newValue: any
-    oldValue: any
+export enum MqttMicrosquadEventType {
+   PLAYER_UPDATE,
+   TEAM_UPDATE,
+   BILLBOARD_UPDATE
+}
+
+export class MqttUpdateEvent {
+    type: MqttMicrosquadEventType;
+    id: string;
+    property: string;
+    newValue: any;
+    oldValue: any;
+
+    constructor(type : MqttMicrosquadEventType,id:string, property:string, newValue, oldValue = null ){
+        this.type = type;
+        this.id = id;
+        this.property = property;
+        this.newValue = newValue;
+        this.oldValue = oldValue;
+    }
 }
