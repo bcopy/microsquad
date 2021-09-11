@@ -50,4 +50,11 @@ export class MQTTClient {
       
         this.client.subscribe(topic);
     }
-}   
+}
+
+export interface MqttUpdateEvent {
+    type: string
+    property: string
+    newValue: any
+    oldValue: any
+}

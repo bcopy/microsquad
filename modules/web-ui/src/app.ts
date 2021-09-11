@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { Subject } from 'rxjs';
 import { MQTTClient } from "./mqtt";
 import { PlayerManager } from './playerManager';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
@@ -18,7 +19,14 @@ var mqttClient;
 
 var mqttClientId;
 
+const mqttSubject : Subject<any> = new Subject();
+
 var sessionCode = "session-default";
+
+var playerManager = new PlayerManager();
+
+var playerStates = new Map();
+var teamStates = new Map();
 
 const loader = new THREE.FileLoader();
 
@@ -87,6 +95,9 @@ subButton.addEventListener('click', () => { _btnSubscribe() } );
 var pubButton : HTMLButtonElement = <HTMLButtonElement>document.getElementById("publish-button");
 pubButton.addEventListener('click', () => { _btnPublish() } );
 
+// Connect the playerManager to MQTT update events
+mqttSubject.subscribe(playerManager.observer);
+
 
 
 /////////////////////////////////////////// SCENE SETUP ////////////////////////////////////////////
@@ -142,7 +153,6 @@ var context : Context = {
 };
 UpdateObject.context = context;
 
-var playerManager = new PlayerManager();
 var addPlayerButton : HTMLButtonElement = <HTMLButtonElement>document.getElementById("add-player");
 addPlayerButton.addEventListener('click', () => { playerManager.addPlayer("Player:"+ Math.random().toString(36).substr(2, 5)) });
 
@@ -295,153 +305,194 @@ const _cmdStringChangeAccessory = "accessory";
 const _cmdStringAssignTeam = "team";
 const _cmdStringSplitTeams = "split";
 
-function playerCommandHandler(command: string[], playerID: string) {
-    if (playerID === "" || playerID === undefined) {
-        switch (command[0]) {
-            case _cmdStringChangeSkin:
-            case _cmdStringChangeAnimation:
-            case _cmdStringChangeAccessory:
-            case _cmdStringSay:
-            case _cmdStringAssignTeam:
-                for (let playerName in playerManager.players) {
-                    playerCommandHandler(command, playerName);
-                }
-                break;
+// function playerCommandHandler(command: string[], playerID: string) {
+//     if (playerID === "" || playerID === undefined) {
+//         switch (command[0]) {
+//             case _cmdStringChangeSkin:
+//             case _cmdStringChangeAnimation:
+//             case _cmdStringChangeAccessory:
+//             case _cmdStringSay:
+//             case _cmdStringAssignTeam:
+//                 for (let playerName in playerManager.players) {
+//                     playerCommandHandler(command, playerName);
+//                 }
+//                 break;
             
-            default:
-                console.warn(`${command} was not a recognized command on this topic`);
-                break;
-        }
-    }
+//             default:
+//                 console.warn(`${command} was not a recognized command on this topic`);
+//                 break;
+//         }
+//     }
 
-    switch (command[0]) {
-        case _cmdStringAddPlayer:
-            playerManager.addPlayer(playerID);
-            break;
+//     switch (command[0]) {
+//         case _cmdStringAddPlayer:
+//             playerManager.addPlayer(playerID);
+//             break;
         
-        case _cmdStringRemovePlayer:
-            playerManager.removePlayer(playerID);
-            break;
+//         case _cmdStringRemovePlayer:
+//             playerManager.removePlayer(playerID);
+//             break;
 
-        case _cmdStringChangeSkin:
-            playerManager.players[playerID].skin = command[1];
-            break;
+//         case _cmdStringChangeSkin:
+//             playerManager.players[playerID].skin = command[1];
+//             break;
 
-        case _cmdStringChangeAnimation:
-            playerManager.players[playerID].changeAnimation(command[1]);
-            break;
+//         case _cmdStringChangeAnimation:
+//             playerManager.players[playerID].changeAnimation(command[1]);
+//             break;
 
-        case _cmdStringSay:
-            playerManager.players[playerID].say(command.slice(1).join(" "));
-            break;
+//         case _cmdStringSay:
+//             playerManager.players[playerID].say(command.slice(1).join(" "));
+//             break;
 
-        case _cmdStringChangeAccessory:
-            playerManager.players[playerID].accessory = command[1];
-            break;
+//         case _cmdStringChangeAccessory:
+//             playerManager.players[playerID].accessory = command[1];
+//             break;
 
-        case _cmdStringAssignTeam:
-            playerManager.assignTeam(playerID, command[1]);
-            break;
+//         case _cmdStringAssignTeam:
+//             playerManager.assignTeam(playerID, command[1]);
+//             break;
         
-        default:
-            console.warn(`${command} was not a recognized command`)
-            break;
-    }
-}
+//         default:
+//             console.warn(`${command} was not a recognized command`)
+//             break;
+//     }
+// }
 
-function teamCommandHandler(command: string[], teamID: string) {
+// function teamCommandHandler(command: string[], teamID: string) {
 
-    switch (command[0]) {
+//     switch (command[0]) {
 
-        case _cmdStringChangeSkin:
-        case _cmdStringChangeAnimation:
-        case _cmdStringSay:
-        case _cmdStringChangeAccessory:
-        case _cmdStringAssignTeam:
-            // Run command for every player in team
-            if (!(teamID in playerManager.teams)) {
-                console.warn(`Team "${teamID}" does not exist`);
-            } else {
-                playerManager.teams[teamID].players.forEach( (player) => {
-                    playerCommandHandler(command, player.id);
-                });
-            }         
-            break;
+//         case _cmdStringChangeSkin:
+//         case _cmdStringChangeAnimation:
+//         case _cmdStringSay:
+//         case _cmdStringChangeAccessory:
+//         case _cmdStringAssignTeam:
+//             // Run command for every player in team
+//             if (!(teamID in playerManager.teams)) {
+//                 console.warn(`Team "${teamID}" does not exist`);
+//             } else {
+//                 playerManager.teams[teamID].players.forEach( (player) => {
+//                     playerCommandHandler(command, player.id);
+//                 });
+//             }         
+//             break;
     
-        case _cmdStringSplitTeams:
-            let teamNames = command.splice(1);   
-            let i = 0;
-            let tot = Object.keys(playerManager.players).length;
-            for (let playerName in playerManager.players) {
-                playerManager.assignTeam(playerName, teamNames[Math.floor(i/tot * teamNames.length)]);
-                i++;
-            }
-            break;
+//         case _cmdStringSplitTeams:
+//             let teamNames = command.splice(1);   
+//             let i = 0;
+//             let tot = Object.keys(playerManager.players).length;
+//             for (let playerName in playerManager.players) {
+//                 playerManager.assignTeam(playerName, teamNames[Math.floor(i/tot * teamNames.length)]);
+//                 i++;
+//             }
+//             break;
 
-        case "reset":
-            // If teamID is not specified, reset all teams
-            if (teamID) {
+//         case "reset":
+//             // If teamID is not specified, reset all teams
+//             if (teamID) {
 
-                if (!(teamID in playerManager.teams)) {
-                    console.warn(`Team "${teamID}" does not exist`);
-                } else {
-                    playerManager.teams[teamID].players.forEach(player => {
-                        playerManager.assignTeam(player.id, playerManager.defaultTeam.name);
-                    });
-                }
+//                 if (!(teamID in playerManager.teams)) {
+//                     console.warn(`Team "${teamID}" does not exist`);
+//                 } else {
+//                     playerManager.teams[teamID].players.forEach(player => {
+//                         playerManager.assignTeam(player.id, playerManager.defaultTeam.name);
+//                     });
+//                 }
 
-            } else {
-                for (let playerName in playerManager.players) {
-                    playerManager.assignTeam(playerName, playerManager.defaultTeam.name);
-                }
-            }
-            break;
+//             } else {
+//                 for (let playerName in playerManager.players) {
+//                     playerManager.assignTeam(playerName, playerManager.defaultTeam.name);
+//                 }
+//             }
+//             break;
 
-        default:
-            break;
-    }
-}
+//         default:
+//             break;
+//     }
+// }
 
-function billboardCommandHandler(command: string[]) {
-    switch (command[0]) {
-        case "show":
-            if (command[1]) {
-                billboard.setBase64Image(command.splice(1).join(','));
-            } else {
-                billboard.mesh.visible = true;
-            }
-            break;
+// function billboardCommandHandler(command: string[]) {
+//     switch (command[0]) {
+//         case "show":
+//             if (command[1]) {
+//                 billboard.setBase64Image(command.splice(1).join(','));
+//             } else {
+//                 billboard.mesh.visible = true;
+//             }
+//             break;
         
-        case 'hide':
-            billboard.mesh.visible = false;
-            break
+//         case 'hide':
+//             billboard.mesh.visible = false;
+//             break
 
-        default:
-            break;
+//         default:
+//             break;
+//     }
+// }
+
+function commandHandler(incomingTopic, value) {
+    let topic = incomingTopic.substring(mqttTopicRoot);
+    let topicParts = topic.split("/");
+
+    if(topicParts[-1].startsWith("$")){
+        // This incoming message is a homie metadata topic, we can ignore it
+        return;
     }
-}
 
-function commandHandler(topic, msg) {
-    let command_topic = topic.split("/");
-    let command = msg.split(",");
+    if (topicParts[0] == "gateway") {
+        const PLAYER_DEVICE_PREFIX = "player-";
+        const TEAM_DEVICE_PREFIX = "team-";
 
-    switch (command_topic[0]) {
-        case "players":
-            playerCommandHandler(command, command_topic[1]);
-            break;
+        /////////////
+        // If the message concerns a player or a team, we store its state for later reference
+        // Eventually, we could keep it in a store implementation - for the time being, maps of maps
+        if (topicParts[1].startsWith(PLAYER_DEVICE_PREFIX) ||
+            topicParts[1].startsWith(TEAM_DEVICE_PREFIX)) {
+            let devicePrefix : string;
+            let stateMap : Map<string,any>;
+            if (topicParts[1].startsWith(PLAYER_DEVICE_PREFIX)) {
+                devicePrefix = PLAYER_DEVICE_PREFIX;
+                stateMap = playerStates;
+            } else if (topicParts[1].startsWith(TEAM_DEVICE_PREFIX)) {
+                devicePrefix = TEAM_DEVICE_PREFIX;
+                stateMap = teamStates;
+            }
+            if (devicePrefix != null) {
+                let deviceId = topicParts[1].substring(devicePrefix.length);
+                let propertyName = topicParts[2];
+                let state = stateMap.get(deviceId) ?? new Map();
+                state.set(propertyName, value);
+                stateMap.set(deviceId, state);
 
-        case "teams":
-            teamCommandHandler(command, command_topic[1]);
-            break;
+                // mqttSubject.next()
+            }
+        }
+        //
+        ////////////////
+    }
+
+
+    // let command_topic = incomingTopic.split("/");
+    // let command = value.split(",");
+
+    // switch (command_topic[0]) {
+    //     case "players":
+    //         playerCommandHandler(command, command_topic[1]);
+    //         break;
+
+    //     case "teams":
+    //         teamCommandHandler(command, command_topic[1]);
+    //         break;
         
-        case "billboard":
-            billboardCommandHandler(command);
-            break;
+    //     case "billboard":
+    //         billboardCommandHandler(command);
+    //         break;
 
-        default:
-            console.warn(`Unrecognized topic ${topic} for command ${msg}`)
-            break;
-    }   
+    //     default:
+    //         console.warn(`Unrecognized topic ${incomingTopic} for command ${value}`)
+    //         break;
+    // }   
 }
 
 function onMqttConnect() {

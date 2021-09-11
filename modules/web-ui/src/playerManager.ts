@@ -1,6 +1,7 @@
 import { Player } from "./player";
 import { Vector3 } from "three";
 import { Team } from "./team";
+import { Observer} from "rxjs";
 
 export class PlayerManager {
     players: { [name: string]: Player } = {};
@@ -11,6 +12,11 @@ export class PlayerManager {
     circleMaxAngle: number = 2 * Math.PI / 3;  // max angle between first and last player
     arcDistPlayers: number = 2;        // arc distance between adjacent players
     arcDistTeams: number = 5;          // arc distance between adjacent teams
+
+    observer = {
+        next: evt => console.log("new update "+evt),
+        error: err => console.log("Error "+err)
+    };
 
     constructor () {
         this.defaultTeam = new Team("__default__", [], true);
