@@ -10,6 +10,11 @@ from ..abstract_mapper import AbstractMapper
 
 from ...event import EventType,MicroSquadEvent
 
+
+def _add_properties_to_tags(node, properties, tags) -> None:
+    for prop in properties:
+        tags[prop] = node.get_property(prop).value
+    
 class HomieMapper(AbstractMapper):
     """
     Homie V4 Mapper - converts incoming MQTT and Microbit radio messages to Homie V4 devices, nodes and properties.
@@ -58,7 +63,8 @@ class HomieMapper(AbstractMapper):
                     if(button_node is not None):
                         button_node.get_property("pressed").value=1
                         button_node.get_property("last").value=datetime.datetime.now().isoformat()
-                        button_node.get_property("count").value=1
+                        button_node.get_property("count").value +=1
+                        _add_properties_to_tags(button_node,["pressed","last", "count"],tags)
                         self.event_source.on_next(MicroSquadEvent(EventType.BUTTON,dev_id,tags.copy()))
                     else:
                         logging.warn("Button {} is not defined as device node !".format("button_id"))
@@ -66,15 +72,19 @@ class HomieMapper(AbstractMapper):
                     # TODO : Set a timer to reset the pressed state later
                     # Could be easily done with RxPy
                 elif verb == EventType.ACCELERATOR.value:
-                    terminal.get_node("accel").get_property("x").value=int(tags["x"])
-                    terminal.get_node("accel").get_property("y").value=int(tags["y"])
-                    terminal.get_node("accel").get_property("z").value=int(tags["z"])
-                    terminal.get_node("accel").get_property("value").value="{x},{y},{z}".format(**tags)
+                    accel_node = terminal.get_node("accel")
+                    accel_node.get_property("x").value=int(tags["x"])
+                    accel_node.get_property("y").value=int(tags["y"])
+                    accel_node.get_property("z").value=int(tags["z"])
+                    accel_node.get_property("value").value="{x},{y},{z}".format(**tags)
+                    _add_properties_to_tags(accel_node,["value"],tags)
                     self.event_source.on_next(MicroSquadEvent(EventType.ACCELERATOR,dev_id,tags.copy()))
                 elif verb == EventType.VOTE.value:
-                    terminal.get_node("vote").get_property("value").value=(tags["value"])
-                    terminal.get_node("vote").get_property("index").value=int(tags["index"])
-                    terminal.get_node("vote").get_property("last").value=datetime.datetime.now().isoformat()
+                    vote_node = terminal.get_node("vote")
+                    vote_node.get_property("value").value=(tags["value"])
+                    vote_node.get_property("index").value=int(tags["index"])
+                    vote_node.get_property("last").value=datetime.datetime.now().isoformat()
+                    _add_properties_to_tags(vote_node,["last"],tags)
                     self.event_source.on_next(MicroSquadEvent(EventType.VOTE,dev_id,tags.copy()))
                 elif verb == EventType.TEMPERATURE.value:
                     terminal.get_node("temperature").get_property("temperature").value=int(tags["value"])
