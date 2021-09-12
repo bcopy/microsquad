@@ -53,9 +53,10 @@ def ulp_serialize(measurement, tags=None, timestamp=None):
       result += " "+str(running_time())
     return result
 
-def usquad_send(measurement, tags= None, timestamp=None):
+def usquad_send(measurement, tags= {}, timestamp=None):
+  tags["dev_id"] = DEVID
   msg = ulp_serialize(measurement, tags, timestamp)
-  radio.send(msg+" dev_id="+DEVID)
+  radio.send(msg)
   if SIMU == True:
     print("Sending : "+msg)
   
