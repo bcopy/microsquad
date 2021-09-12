@@ -11,7 +11,7 @@ def _pop_head_or_none(arr, peek_only = False):
 def ulp_parse(msg):
     meas = None
     tags = {}
-    vals = {}
+    fields = {}
     tmstp = None
 
     frags = msg.split(" ")
@@ -28,20 +28,20 @@ def ulp_parse(msg):
     if frag is not None:
         if("=" in frag):
             frag = _pop_head_or_none(frags)
-            valuesFragment = frag.split(",")
-            for valueFragment in map(lambda v: v.split("="),valuesFragment):
-                vals[valueFragment[0]] = valueFragment[1]
+            fieldsFragment = frag.split(",")
+            for fieldFragment in map(lambda v: v.split("="),fieldsFragment):
+                fields[fieldFragment[0]] = fieldFragment[1]
     frag = _pop_head_or_none(frags)
     if frag is not None:
         tmstp = int(frag)
-    return (meas, tags, vals, tmstp)
+    return (meas, tags, fields, tmstp)
 
-def ulp_serialize(measurement, tags=None, values=None, timestamp=None): 
+def ulp_serialize(measurement, tags=None, fields=None, timestamp=None): 
     result = measurement
     if tags is not None:
       result += (','.join('{}="{}"'.format(key, value) for key, value in tags.items())) + " "
-    if values is not None:
-      result += (','.join('{}={}'.format(key, value) for key, value in values.items())) + " "
+    if fields is not None:
+      result += (','.join('{}={}'.format(key, value) for key, value in fields.items())) + " "
     if timestamp is not None:
       result += timestamp
     else:
