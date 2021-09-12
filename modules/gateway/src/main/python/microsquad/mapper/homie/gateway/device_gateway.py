@@ -64,7 +64,7 @@ class DeviceGateway(Device_Base):
     
     def add_terminal(self, device_id : str):
         if(device_id not in self.terminals.keys()):
-            terminal = DeviceTerminal(event_source = self._event_source,device_id = "terminal-"+str(device_id), name="Terminal "+device_id, homie_settings=self.homie_settings, mqtt_settings=self._mqtt_settings)
+            terminal = DeviceTerminal(event_source = self._event_source,device_id = "terminal-"+str(device_id), name="Terminal "+str(device_id), homie_settings=self.homie_settings, mqtt_settings=self._mqtt_settings)
             terminal.get_node("info").get_property("terminal-id").value = device_id
             terminal.get_node("info").get_property("serial-number").value = device_id
             logging.info("Added new terminal {}".format(device_id))
