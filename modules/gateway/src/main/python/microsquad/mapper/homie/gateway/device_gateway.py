@@ -69,7 +69,8 @@ class DeviceGateway(Device_Base):
             terminal.get_node("info").get_property("serial-number").value = device_id
             logging.info("Added new terminal {}".format(device_id))
             self._terminals[device_id] = terminal
-
+            terminal.start()
+            
     @property
     def terminals(self):
         return self._terminals
