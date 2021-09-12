@@ -28,7 +28,9 @@ class HomieDummyGateway:
         self.deviceGateway.start()
         self.connector.start()
 
-    
+    @property
+    def event_source(self):
+        return self._event_source
 
 def main():
     global gateway
@@ -42,9 +44,7 @@ def main():
                 "update_interval": 1
             }
 
-    event_source = Subject()
-
-    gateway = HomieDummyGateway(HOMIE_SETTINGS, MQTT_SETTINGS, event_source)
+    gateway = HomieDummyGateway(HOMIE_SETTINGS, MQTT_SETTINGS, Subject())
     print("Starting dummy gateway...")
     gateway.start()
     # dev_id = "1234-5435"
