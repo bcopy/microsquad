@@ -7,7 +7,7 @@ try:
   import machine
   DEVID = machine.unique_id()
 except ImportError:
-  DEVID = "123456789123456789"
+  DEVID = "12345678-9123456789"
   SIMU = True
   print("Could not import machine module, DEVICE ID : "+str(DEVID))
 
