@@ -57,8 +57,8 @@ class HomieMapper(AbstractMapper):
                     button_node = terminal.get_node(button_id)
                     if(button_node is not None):
                         button_node.get_property("pressed").value=1
-                        button_node.get_property("pressed-last").value=datetime.datetime.now().isoformat()
-                        button_node.get_property("pressed-count").value=1
+                        button_node.get_property("last").value=datetime.datetime.now().isoformat()
+                        button_node.get_property("count").value=1
                         self.event_source.on_next(MicroSquadEvent(EventType.BUTTON,dev_id,tags.copy()))
                     else:
                         logging.warn("Button {} is not defined as device node !".format("button_id"))
@@ -72,8 +72,9 @@ class HomieMapper(AbstractMapper):
                     terminal.get_node("accel").get_property("value").value="{x},{y},{z}".format(**tags)
                     self.event_source.on_next(MicroSquadEvent(EventType.ACCELERATOR,dev_id,tags.copy()))
                 elif verb == EventType.VOTE.value:
-                    terminal.get_node("vote").get_property("choice-value").value=(tags["value"])
-                    terminal.get_node("vote").get_property("choice-index").value=int(tags["index"])
+                    terminal.get_node("vote").get_property("value").value=(tags["value"])
+                    terminal.get_node("vote").get_property("index").value=int(tags["index"])
+                    terminal.get_node("vote").get_property("last").value=datetime.datetime.now().isoformat()
                     self.event_source.on_next(MicroSquadEvent(EventType.VOTE,dev_id,tags.copy()))
                 elif verb == EventType.TEMPERATURE.value:
                     terminal.get_node("temperature").get_property("temperature").value=int(tags["value"])

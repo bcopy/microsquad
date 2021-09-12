@@ -1,6 +1,7 @@
 import logging
 
 from homie.node.property.property_integer import Property_Integer
+from homie.node.property.property_string import Property_String
 from homie.node.node_base import Node_Base
 
 logger = logging.getLogger(__name__)
@@ -20,6 +21,6 @@ class NodeAccelerator(Node_Base):
       self.add_property(Property_Integer(self, id="x", name="x", settable=False))
       self.add_property(Property_Integer(self, id="y", name="y", settable=False))
       self.add_property(Property_Integer(self, id="z", name="z", settable=False))
-      self.add_property(Property_Integer(self, id="value", name="Value", settable=False))
+      self.add_property(Property_String(self, id="value", name="Value", settable=False))
        
 

@@ -19,7 +19,7 @@ class NodeVote(Node_Base):
     ):
       super().__init__(device, id, name, type_, retain, qos)
 
-      self.add_property(Property_String(self,   id="choice-value",  name="choice value"))
-      self.add_property(Property_Integer(self,   id="choice-index", name="choice index", settable=False))
-      self.add_property(Property_DateTime(self, id="vote-last",     name="vote-last"))
+      self.add_property(Property_String(self,   id="value",  name="Choice value"))
+      self.add_property(Property_Integer(self,   id="index", name="Choice index", settable=False))
+      self.add_property(Property_DateTime(self, id="last",     name="Last vote timestamp"))
       
