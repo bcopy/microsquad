@@ -21,9 +21,6 @@ RUN npm run build
 RUN  mv ./public/assets ./dist/
 RUN  mv ./public/conf ./dist/
 
-# IMPORTANT : The upstream image defines /etc/lighttpd as a volume.
-#             This prevents any modifications to be brought to the image's files
-#             under /etc/lighttpd.
 FROM nginx:stable-alpine
 
 RUN apk update
@@ -50,6 +47,11 @@ ENV NGINX_HOSTNAME=localhost
 #   e.g. /web-ui 
 ENV NGINX_CONTEXT_PATH=/web-ui
 
-# You can inject the JSON configuration file as config.json in this location
+COPY deployment/docker/etc/nginx /etc/nginx
+
+# # You can inject the JSON configuration file as config.json in this location
 VOLUME /usr/share/nginx/html/conf/
+
+# nginx default.conf.template
+VOLUME "/etc/nginx/templates"
 USER nginx
