@@ -19,8 +19,8 @@ class NodeButton(Node_Base):
     ):
       super().__init__(device, id, name, type_, retain, qos)
 
-      self.add_property(Property_String(self,   id="pressed",        name="pressed"))
-      self.add_property(Property_Integer(self,  id="pressed-count",  name="pressed count", settable=False))
-      self.add_property(Property_DateTime(self, id="pressed-last",   name="pressed-last"))
+      self.add_property(Property_String(self,   id="pressed",        name="Pressed"))
+      self.add_property(Property_Integer(self,  id="count",  value=0,name="Pressed count", settable=False))
+      self.add_property(Property_DateTime(self, id="last",   name="Last pressed timestamp"))
       
 

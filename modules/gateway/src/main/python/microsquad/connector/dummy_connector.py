@@ -17,7 +17,11 @@ class DummyConnector(AbstractConnector):
     def queue(self, message):
       print("'Sending' Message to Microbits ;-) : "+message)
         
-    def simulate_message_from_microbit(self,msg : str):
+    
+    def simulate_message(self,msg : str):
+      """
+       Simulate a message coming from one of the microbits
+      """
       self._incoming_queue.put(msg)
     
     def dispatch_next(self):

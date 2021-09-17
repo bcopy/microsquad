@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
       setup_requires=['pytest-runner'],
-      install_requires=[ 'wheel','influx_line_protocol>=0.1.4','cs20-microbitio==0.2', 'paho-mqtt==1.5.1', 'line-protocol-parser', 'RxPy3', 'Homie4', 'python-dotenv', "homieclient"],
+      install_requires=[ 'wheel','cs20-microbitio==0.2', 'paho-mqtt==1.5.1', 'RxPy3', 'Homie4', 'python-dotenv', "homieclient"],
       extras_require={
          'test':['pytest','pytest-cov','hbmqtt']
       },

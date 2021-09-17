@@ -18,7 +18,7 @@ class TestTerminalDevice(unittest.TestCase):
         self.terminals.append(DeviceTerminal(device_id="terminal-01",name="Terminal 01",event_source=self._event_source, mqtt_settings=self.mqtt_settings))
         
 
-    def test_add_terminal(self):
+    def test_button_a(self):
         self.terminals[0].get_node("button-a").get_property("pressed").value = True
         assert self.terminals[0].get_node("button-a").get_property("pressed").value
 

@@ -443,26 +443,26 @@ function commandHandler(incomingTopic, value) {
     }
 
     if (topicParts[0] == "gateway") {
-        const PLAYER_DEVICE_PREFIX = "player-";
-        const TEAM_DEVICE_PREFIX = "team-";
+        const PLAYER_NODE_PREFIX = "player-";
+        const TEAM_NODE_PREFIX = "team-";
 
         /////////////
         // If the message concerns a player or a team, we store its state for later reference
         // Eventually, we could keep it in a store implementation - for the time being, maps of maps
-        if (topicParts[1].startsWith(PLAYER_DEVICE_PREFIX) ||
-            topicParts[1].startsWith(TEAM_DEVICE_PREFIX)) {
+        if (topicParts[1].startsWith(PLAYER_NODE_PREFIX) ||
+            topicParts[1].startsWith(TEAM_NODE_PREFIX)) {
             let devicePrefix : string;
             let stateMap : Map<string,any>;
             let propertyName : string;
             let eventType : MqttMicrosquadEventType;
             let subject: Subject<MqttUpdateEvent>;
-            if (topicParts[1].startsWith(PLAYER_DEVICE_PREFIX)) {
-                devicePrefix = PLAYER_DEVICE_PREFIX;
+            if (topicParts[1].startsWith(PLAYER_NODE_PREFIX)) {
+                devicePrefix = PLAYER_NODE_PREFIX;
                 stateMap = playerStates;
                 eventType = MqttMicrosquadEventType.PLAYER_UPDATE;
                 subject = playerSubject;
-            } else if (topicParts[1].startsWith(TEAM_DEVICE_PREFIX)) {
-                devicePrefix = TEAM_DEVICE_PREFIX;
+            } else if (topicParts[1].startsWith(TEAM_NODE_PREFIX)) {
+                devicePrefix = TEAM_NODE_PREFIX;
                 stateMap = teamStates;
                 eventType = MqttMicrosquadEventType.TEAM_UPDATE;
                 subject = teamSubject;
