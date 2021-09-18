@@ -127,13 +127,13 @@ const camera = new THREE.PerspectiveCamera(
     window.innerWidth / window.innerHeight,     // Ratio
     0.1, 1000                                   // Near / Far Clip
 );
-camera.position.set(0, 2, -10);
+camera.position.set(0, 0, -10);
 
 const controls = new OrbitControls( camera, renderer.domElement );
 controls.enableDamping = true;
 controls.dampingFactor = 0.1;
 controls.enablePan = false;
-controls.target.set(0, 2, 1);
+controls.target.set(0, 3, 1);
 controls.minPolarAngle = controls.getPolarAngle();
 controls.maxPolarAngle = controls.getPolarAngle();
 controls.maxAzimuthAngle = controls.getAzimuthalAngle();
@@ -152,6 +152,8 @@ UpdateObject.context = context;
 
 var playerManager = new PlayerManager();
 
+window['playerManager'] = playerManager;
+
 // Connect the playerManager to MQTT update events
 playerSubject.subscribe(playerManager.observer);
 
@@ -160,7 +162,7 @@ addPlayerButton.addEventListener('click', () => { playerManager.addPlayer("Playe
 
 var billboard = new Billboard(UpdateObject.context);
 
-
+window['billboard'] = billboard;
 ////////////////////////////////////////// ASSET LOADING ///////////////////////////////////////////
 
 const manager = new THREE.LoadingManager();

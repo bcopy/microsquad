@@ -11,7 +11,7 @@ export class TextBox3D extends UpdateObject {
     hasTriangle: boolean;
     triangleElement: HTMLDivElement;
     triangleSize = 10;
-    color = '#FFFFFF88';
+    color = '#FFFFFF99';
 
     private _visible: boolean = true;
 
@@ -25,11 +25,10 @@ export class TextBox3D extends UpdateObject {
         this.textElement.style.position = 'absolute';
         this.textElement.style.width = 'fit-content';
         this.textElement.style.height = 'fit-content';
-        this.textElement.style.paddingLeft = '10px';
-        this.textElement.style.paddingRight = '10px';
-        this.textElement.style.fontSize = '18px';
+        this.textElement.style.padding = '5px';
+        this.textElement.style.fontSize = '34px';
         this.textElement.style.backgroundColor = this.color;
-        this.textElement.style.borderRadius = '10px';
+        this.textElement.style.borderRadius = '15px';
         this.textElement.innerHTML = text;
         document.body.appendChild(this.textElement);
         this.textOffsetWidth = this.textElement.offsetWidth;
