@@ -15,7 +15,7 @@ export class PlayerManager {
     arcDistTeams: number = 5;          // arc distance between adjacent teams
 
     observer = {
-        next: (event: MqttUpdateEvent) => console.log("new update "+event.id+" "+event.property),
+        next: (event: MqttUpdateEvent) => console.log("Player Manager : new update "+event.id+" "+event.property),
         error: err => console.log("Error "+err)
     };
 

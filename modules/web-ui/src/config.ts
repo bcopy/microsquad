@@ -5,7 +5,7 @@ let config = {
 
 if (process.env.NODE_ENV === 'production') {
     config.MQTT_URI = "MQTT_URI_REPLACE";
-    config.MQTT_TOPIC_ROOT = "MQTT_CLIENT_ID_REPLACE";
+    config.MQTT_TOPIC_ROOT = "MQTT_TOPIC_ROOT_REPLACE";
 }
 
 export default config;

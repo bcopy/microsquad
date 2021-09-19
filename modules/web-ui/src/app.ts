@@ -25,6 +25,7 @@ const billboardSubject : Subject<MqttUpdateEvent> = new Subject();
 
 var sessionCode = "session-default";
 
+var mqttSubscriptionRoot:string;
 
 var playerStates = new Map();
 var teamStates = new Map();
@@ -436,10 +437,10 @@ const _cmdStringSplitTeams = "split";
 // }
 
 function commandHandler(incomingTopic, value) {
-    let topic = incomingTopic.substring(mqttTopicRoot);
+    let topic = incomingTopic.substring(mqttSubscriptionRoot.length-1);
     let topicParts = topic.split("/");
 
-    if(topicParts[-1].startsWith("$")){
+    if(topicParts.slice(-1)[0].startsWith("$")){
         // This incoming message is a homie metadata topic, we can ignore it
         return;
     }
@@ -470,13 +471,13 @@ function commandHandler(incomingTopic, value) {
                 subject = teamSubject;
             }
             if (devicePrefix != null) {
-                let deviceId = topicParts[1].substring(devicePrefix.length+1);
+                let deviceId = topicParts[1].substring(devicePrefix.length);
                 let propertyName = topicParts[2];
                 let state = stateMap.get(deviceId) ?? new Map();
                 state.set(propertyName, value);
                 stateMap.set(deviceId, state);
 
-                subject.next(new MqttUpdateEvent(eventType, deviceId,propertyName, value));
+                subject.next(new MqttUpdateEvent(eventType, deviceId, propertyName, value));
             }
         }
         //
@@ -508,12 +509,11 @@ function commandHandler(incomingTopic, value) {
 
 function onMqttConnect() {
     console.log("Connected to " + mqttClient.uri);
-    let subscriptionRoot:string;
     if(config.MQTT_TOPIC_ROOT != null){
         mqttTopicRoot = config.MQTT_TOPIC_ROOT
     }
-    subscriptionRoot = mqttTopicRoot +"/"+sessionCode+"/#";
-    mqttClient.subscribe(subscriptionRoot);
+    mqttSubscriptionRoot = mqttTopicRoot +"/"+sessionCode+"/#";
+    mqttClient.subscribe(mqttSubscriptionRoot);
     subButton.disabled = false;
     pubButton.disabled = false;
 }
