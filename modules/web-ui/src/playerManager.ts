@@ -15,13 +15,47 @@ export class PlayerManager {
     arcDistTeams: number = 5;          // arc distance between adjacent teams
 
     observer = {
-        next: (event: MqttUpdateEvent) => console.log("Player Manager : new update "+event.id+" "+event.property),
-        error: err => console.log("Error "+err)
+        next: (event) => {this.handleMQTTUpdateEvent(event)},
+        error: err => console.log("Error handling MQTT Update Event "+err)
     };
 
     constructor () {
         this.defaultTeam = new Team("__default__", [], true);
         this.teams["__default__"] = this.defaultTeam;
+    }
+
+    handleMQTTUpdateEvent(event : MqttUpdateEvent){
+        // console.log("Player Manager : new update "+event.id+" "+event.property);
+        let playerId = event.id
+
+        if(!this.hasPlayer(playerId)){
+            this.addPlayer(playerId);
+        }
+
+        switch (event.property) {
+            case "skin":
+                this.players[playerId].skin = event.newValue;
+                break;
+            case "order":
+                    this.players[playerId].order = event.newValue;
+                    break;
+            case "animation":
+                this.players[playerId].changeAnimation(event.newValue);
+                break;
+            case "say":
+                this.players[playerId].say(event.newValue);
+                break;
+            case "accessory":
+                this.players[playerId].accessory = event.newValue;
+                break;
+            // case _cmdStringAssignTeam:
+            //     playerManager.assignTeam(playerID, command[1]);
+            //     break;
+            default:
+                console.warn(`PlayerManager : ${event.property} was not a recognized.`)
+                break;
+        }
+        this.updatePlayerPositions();
     }
 
     updatePlayerPositions() {
@@ -75,9 +109,15 @@ export class PlayerManager {
         }
     }
 
+    hasPlayer(id: string) : boolean{
+        return id in this.players;
+    }
+
     addPlayer(id: string) {
-        this.players[id] = new Player(id, this.defaultTeam);
-        this.updatePlayerPositions();
+        if(!this.hasPlayer(id)){
+            this.players[id] = new Player(id, this.defaultTeam);
+            this.updatePlayerPositions();
+        }
     }
 
     removePlayer(id: string) {
