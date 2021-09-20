@@ -297,72 +297,8 @@ function setupThreeJsScene(){
 ///////////////////////////////////////// COMMAND HANDLING /////////////////////////////////////////
 
 function onMessageArrived(message : any) {
-    console.log("onMessageArrived: "+message.payloadString);   
     commandHandler(message.destinationName, message.payloadString);
 }
-
-const _cmdStringAddPlayer = "add";
-const _cmdStringRemovePlayer = "remove";
-const _cmdStringChangeSkin = "skin";
-const _cmdStringChangeAnimation = "animation";
-const _cmdStringSay = "say";
-const _cmdStringChangeAccessory = "accessory";
-const _cmdStringAssignTeam = "team";
-const _cmdStringSplitTeams = "split";
-
-// function playerCommandHandler(command: string[], playerID: string) {
-//     if (playerID === "" || playerID === undefined) {
-//         switch (command[0]) {
-//             case _cmdStringChangeSkin:
-//             case _cmdStringChangeAnimation:
-//             case _cmdStringChangeAccessory:
-//             case _cmdStringSay:
-//             case _cmdStringAssignTeam:
-//                 for (let playerName in playerManager.players) {
-//                     playerCommandHandler(command, playerName);
-//                 }
-//                 break;
-            
-//             default:
-//                 console.warn(`${command} was not a recognized command on this topic`);
-//                 break;
-//         }
-//     }
-
-//     switch (command[0]) {
-//         case _cmdStringAddPlayer:
-//             playerManager.addPlayer(playerID);
-//             break;
-        
-//         case _cmdStringRemovePlayer:
-//             playerManager.removePlayer(playerID);
-//             break;
-
-//         case _cmdStringChangeSkin:
-//             playerManager.players[playerID].skin = command[1];
-//             break;
-
-//         case _cmdStringChangeAnimation:
-//             playerManager.players[playerID].changeAnimation(command[1]);
-//             break;
-
-//         case _cmdStringSay:
-//             playerManager.players[playerID].say(command.slice(1).join(" "));
-//             break;
-
-//         case _cmdStringChangeAccessory:
-//             playerManager.players[playerID].accessory = command[1];
-//             break;
-
-//         case _cmdStringAssignTeam:
-//             playerManager.assignTeam(playerID, command[1]);
-//             break;
-        
-//         default:
-//             console.warn(`${command} was not a recognized command`)
-//             break;
-//     }
-// }
 
 // function teamCommandHandler(command: string[], teamID: string) {
 
@@ -484,27 +420,6 @@ function commandHandler(incomingTopic, value) {
         ////////////////
     }
 
-
-    // let command_topic = incomingTopic.split("/");
-    // let command = value.split(",");
-
-    // switch (command_topic[0]) {
-    //     case "players":
-    //         playerCommandHandler(command, command_topic[1]);
-    //         break;
-
-    //     case "teams":
-    //         teamCommandHandler(command, command_topic[1]);
-    //         break;
-        
-    //     case "billboard":
-    //         billboardCommandHandler(command);
-    //         break;
-
-    //     default:
-    //         console.warn(`Unrecognized topic ${incomingTopic} for command ${value}`)
-    //         break;
-    // }   
 }
 
 function onMqttConnect() {
