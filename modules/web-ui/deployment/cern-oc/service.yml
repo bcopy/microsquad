@@ -240,7 +240,7 @@ objects:
         spec:
           containers:
             - image: >-
-                gitlab-registry.cern.ch/cmcrobotics/microsquad:develop
+                gitlab-registry.cern.ch/cmcrobotics/microsquad:${IMAGE_VERSION}
               imagePullPolicy: Always
               name: web-ui
               livenessProbe:
@@ -311,4 +311,7 @@ parameters:
   - name: CONTEXT_PATH
     description: Web UI Context Path
     value: "/ui"
+  - name: IMAGE_VERSION
+    description: Web UI image version
+    value: develop
 

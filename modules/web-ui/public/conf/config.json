@@ -1,4 +1,4 @@
 {
-    "MQTT_URI": "ws://broker.emqx.io:8083/mqtt",
-    "MQTT_CLIENT_ID":"clientID"
+    "MQTT_URI": "ws://localhost:9001/mqtt",
+    "MQTT_TOPIC_ROOT": "microsquad"
 }

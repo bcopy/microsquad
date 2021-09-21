@@ -14,7 +14,7 @@ objects:
       namespace: ${NAMESPACE}
     spec:
       host: ${NAMESPACE}.web.cern.ch
-      path: ${CONTEXT_PATH}
+      #path: ${CONTEXT_PATH}
       port:
         targetPort: 8080-tcp
       tls:

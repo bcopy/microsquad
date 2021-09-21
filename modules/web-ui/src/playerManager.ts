@@ -1,6 +1,8 @@
 import { Player } from "./player";
 import { Vector3 } from "three";
 import { Team } from "./team";
+import { Observer} from "rxjs";
+import { MqttMicrosquadEventType, MqttUpdateEvent } from "./mqtt";
 
 export class PlayerManager {
     players: { [name: string]: Player } = {};
@@ -12,9 +14,48 @@ export class PlayerManager {
     arcDistPlayers: number = 2;        // arc distance between adjacent players
     arcDistTeams: number = 5;          // arc distance between adjacent teams
 
+    observer = {
+        next: (event) => {this.handleMQTTUpdateEvent(event)},
+        error: err => console.log("Error handling MQTT Update Event "+err)
+    };
+
     constructor () {
         this.defaultTeam = new Team("__default__", [], true);
         this.teams["__default__"] = this.defaultTeam;
+    }
+
+    handleMQTTUpdateEvent(event : MqttUpdateEvent){
+        // console.log("Player Manager : new update "+event.id+" "+event.property);
+        let playerId = event.id
+
+        if(!this.hasPlayer(playerId)){
+            this.addPlayer(playerId);
+        }
+
+        switch (event.property) {
+            case "skin":
+                this.players[playerId].skin = event.newValue;
+                break;
+            case "order":
+                    this.players[playerId].order = event.newValue;
+                    break;
+            case "animation":
+                this.players[playerId].changeAnimation(event.newValue);
+                break;
+            case "say":
+                this.players[playerId].say(event.newValue);
+                break;
+            case "accessory":
+                this.players[playerId].accessory = event.newValue;
+                break;
+            // case _cmdStringAssignTeam:
+            //     playerManager.assignTeam(playerID, command[1]);
+            //     break;
+            default:
+                console.warn(`PlayerManager : ${event.property} was not a recognized.`)
+                break;
+        }
+        this.updatePlayerPositions();
     }
 
     updatePlayerPositions() {
@@ -47,8 +88,11 @@ export class PlayerManager {
         for (var teamName in this.teams) {
             var len = this.teams[teamName].players.length;
             if (len !== 0) {
+                // Sort players by order within the team
+                let sortedPlayers = this.teams[teamName].players.sort((obj1,obj2)=>(obj1.order >= obj2.order?1:-1));
+                //let sortedPlayers = this.teams[teamName].players
                 // Set player positions
-                this.teams[teamName].players.forEach(player => {
+                sortedPlayers.forEach(player => {
                     player.rotation = new Vector3(0, -angle - Math.PI/2, 0);
                     player.position = new Vector3(Math.cos(angle), 0, Math.sin(angle)).multiplyScalar(this.circleRadius);
                     player.scale = scale;
@@ -65,9 +109,15 @@ export class PlayerManager {
         }
     }
 
+    hasPlayer(id: string) : boolean{
+        return id in this.players;
+    }
+
     addPlayer(id: string) {
-        this.players[id] = new Player(id, this.defaultTeam);
-        this.updatePlayerPositions();
+        if(!this.hasPlayer(id)){
+            this.players[id] = new Player(id, this.defaultTeam);
+            this.updatePlayerPositions();
+        }
     }
 
     removePlayer(id: string) {

@@ -1,4 +1,0 @@
-{
-    "MQTT_URI": "ws://localhost:9001/",
-    "MQTT_CLIENT_ID":"clientID"
-}

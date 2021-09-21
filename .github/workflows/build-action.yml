@@ -14,7 +14,7 @@ jobs:
               run: npm install
             
             - name: Build & run
-              run: docker-compose up -d
+              run: docker build .
             
     #        - name: SonarCloud Scan
     #          uses: sonarsource/sonarcloud-github-action@master
@@ -34,8 +34,8 @@ jobs:
             - name: Wait a bit until MQTT broker has started
               run: sleep 30
 
-        #    - name: Cypress Test
-        #      run: npm run cytest
+            # - name: Cypress Test
+            #   run: npm run cytest
 
             - name: Login to DockerHub
               uses: docker/login-action@v1

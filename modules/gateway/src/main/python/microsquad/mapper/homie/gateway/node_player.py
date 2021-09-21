@@ -17,12 +17,14 @@ class NodePlayer(Node_Base):
         name="Player",
         type_="player",
         retain=True,
+        order=0,
         qos=1
     ):
       super().__init__(device, id, name, type_, retain, qos)
 
       self.add_property(Property_String(self,   id="nickname",           name="nickname"))
       self.add_property(Property_String(self,   id="skin",               name="skin"))
+      self.add_property(Property_Integer(self,  id="order",              name="order", settable=False))
       self.add_property(Property_String(self,   id="say",                name="say"))
       self.add_property(Property_DateTime(self, id="say-start",          name="say start"))
       self.add_property(Property_Integer(self,  id="say-duration",       name="say duration", settable=False))
@@ -31,4 +33,6 @@ class NodePlayer(Node_Base):
       self.add_property(Property_Integer(self,  id="animation-duration", name="animation duration", settable=False))
       self.add_property(Property_String(self,   id="accessory",          name="accessory"))
       self.add_property(Property_String(self,   id="terminal-id",        name="terminal id"))
+
+      self.get_property("order").value = order
 

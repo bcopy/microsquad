@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 class NodeTeamManager(Node_Base):
 
     def __init__(self, device):
-      super().__init__(device, id="team-manager", name="Team Manager", type_="team_manager", retain=True, qos=1)
+      super().__init__(device, id="teams-manager", name="Teams Manager", type_="teams_manager", retain=True, qos=1)
       
       self.add_property(Property_String(self, id="add-player", settable=True, name="add player", set_value = self.add_player ))
       self.add_property(Property_String(self, id="remove-player", settable=True, name="remove player", set_value = self.remove_player ))

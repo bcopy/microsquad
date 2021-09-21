@@ -1,3 +1,19 @@
+
+
+.openshift_auth_setup: &openshift_auth_setup
+  image: gitlab-registry.cern.ch/paas-tools/openshift-client:latest
+  before_script:
+    - echo "Sourcing SCM branch environment at modules/web-ui/deployment/cern-oc/${CI_COMMIT_REF_NAME}.env"
+    - source modules/web-ui/deployment/cern-oc/deployment/${CI_COMMIT_REF_NAME}.env
+    - export ENV_FILE_VAR="${CI_COMMIT_REF_NAME^^}_ENV"
+    - echo "Sourcing ${ENV_FILE_VAR} into .env file "
+    - cat ${!ENV_FILE_VAR} > .env
+    - source .env
+    - echo "Authenticating with ${OPENSHIFT_SERVER}"
+    - oc login $OPENSHIFT_SERVER --token=$OPENSHIFT_TOKEN
+    - oc project $NAMESPACE
+
+
 sonarqube-check:
   image: 
     name: sonarsource/sonar-scanner-cli:latest
@@ -18,17 +34,29 @@ sonarqube-check:
 
 
 
-Web UI docker image:
+Build Web UI image:
     stage: build
     image: 
       name: gitlab-registry.cern.ch/ci-tools/docker-image-builder
       entrypoint: [""]
     script:
       - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
-      - echo Building latest Docker Image $CI_PROJECT_NAME 
-      - /kaniko/executor --context $CI_PROJECT_DIR/modules/web-ui --dockerfile $CI_PROJECT_DIR/modules/web-ui/Dockerfile.openshift --destination $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
+      - echo Building latest Docker Image $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
+      - /kaniko/executor --context $CI_PROJECT_DIR/modules/web-ui --dockerfile $CI_PROJECT_DIR/modules/web-ui/Dockerfile --destination $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
     only:
       - master
       - develop
 
+
+Update deployment:
+  <<: *openshift_auth_setup
+  stage: deploy
+  script:
+    - echo "***** Updating instance deployment for ${CI_COMMIT_REF_NAME}"
+    - oc process --ignore-unknown-parameters -o json --param-file=deployment/${CI_COMMIT_REF_NAME}.env -f modules/web-ui/deployment/cern-oc/service.yml --local=true | jq '.items[] | select (.kind != "PersistentVolumeClaim")' | oc apply -f -
+    - oc process --ignore-unknown-parameters --param-file=deployment/${CI_COMMIT_REF_NAME}.env -f modules/web-ui/deployment/cern-oc/routes.yml --local=true | oc apply -f -
+  only: 
+    refs: [develop, master]
+    changes: 
+      - "modules/web-ui/deployment/cern-oc/**/*"
 

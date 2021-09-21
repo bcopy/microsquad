@@ -22,8 +22,8 @@ class TestHomieMapper(unittest.TestCase):
         self.gateway.start()
 
     def test_bonjour_event(self):
-        dev_id = "1234-5678"
-        self.mapper.map_from_microbit('bonjour dev_id="{}"'.format(dev_id))
+        dev_id = "12345678"
+        self.mapper.map_from_microbit('bonjour,dev_id={}'.format(dev_id))
         assert 1 == len(self.received_events)
         assert EventType.BONJOUR == self.received_events[0].event_type
         assert dev_id == self.received_events[0].device_id
@@ -31,7 +31,7 @@ class TestHomieMapper(unittest.TestCase):
     def test_read_accelerator_event(self):
         dev_id = "1234-5678"
         readings = {'x':-12,'y':80,'z':-60}
-        self.mapper.map_from_microbit('read_accel,x={x},y={y},z={z} dev_id="{0}"'.format(dev_id,**readings))
+        self.mapper.map_from_microbit('read_accel,x={x},y={y},z={z},dev_id="{0}"'.format(dev_id,**readings))
         assert 1 == len(self.received_events)
         for evt in self.received_events:
           assert EventType.ACCELERATOR == evt.event_type

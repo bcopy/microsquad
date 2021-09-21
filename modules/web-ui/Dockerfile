@@ -21,29 +21,23 @@ RUN npm run build
 RUN  mv ./public/assets ./dist/
 RUN  mv ./public/conf ./dist/
 
-# IMPORTANT : The upstream image defines /etc/lighttpd as a volume.
-#             This prevents any modifications to be brought to the image's files
-#             under /etc/lighttpd.
 FROM nginx:stable-alpine
 
 RUN apk update
 
 ######################
 # Make the image Openshift-friendly
-# RUN chmod g+rwxt /var/cache/nginx /var/run /var/log/nginx /etc/nginx/conf.d || true
+RUN chmod g+rwxt /var/cache/nginx /var/run /var/log/nginx /etc/nginx/conf.d || true
 # Remove the upstream default configuration
-# RUN rm  /etc/nginx/conf.d/default.conf
-
-# RUN chgrp -R root /var/cache/nginx
+RUN rm  /etc/nginx/conf.d/default.conf
+# Remove the upstream IPv6 configuration entrypoint - only useful if we kept the default configuration
+RUN rm /docker-entrypoint.d/10-listen-on-ipv6-by-default.sh
+RUN chgrp -R root /var/cache/nginx
 
 # comment user directive as master process is run as user in OpenShift anyhow
-# RUN sed -i.bak 's/^user/#user/' /etc/nginx/nginx.conf
+RUN sed -i.bak 's/^user/#user/' /etc/nginx/nginx.conf
 
-# RUN addgroup nginx root
-
-RUN chmod u=rwxt /var/cache/nginx /var/run /var/log/nginx /etc/nginx/conf.d || true
-RUN chown nginx  /var/cache/nginx /var/run /var/log/nginx /etc/nginx/conf.d || true
-RUN rm /etc/nginx/conf.d/default.conf
+RUN addgroup nginx root
 
 COPY --from=builder /home/node/app/dist /usr/share/nginx/html
 
@@ -53,11 +47,11 @@ ENV NGINX_HOSTNAME=localhost
 #   e.g. /web-ui 
 ENV NGINX_CONTEXT_PATH=/web-ui
 
+COPY deployment/docker/etc/nginx /etc/nginx
+
 # # You can inject the JSON configuration file as config.json in this location
 VOLUME /usr/share/nginx/html/conf/
 
 # nginx default.conf.template
 VOLUME "/etc/nginx/templates"
 USER nginx
-
-
