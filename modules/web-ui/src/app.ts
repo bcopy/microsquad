@@ -107,10 +107,16 @@ renderer.outputEncoding = THREE.sRGBEncoding;
 document.body.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0xf5ca6e);
+scene.background = new THREE.Color(0x418afb); //0xf5ca6e;
 const ambientColor = 0xFFFFFF;
 const ambiIntensity = 0.8;
 const ambilight = new THREE.AmbientLight(ambientColor, ambiIntensity);
+
+const geo = new THREE.CircleGeometry(20, 20, 32);
+const mat = new THREE.MeshBasicMaterial({ color: 0xf5ca6e, side: THREE.DoubleSide });
+var plane = new THREE.Mesh(geo, mat);
+plane.rotateX( - Math.PI / 2);
+scene.add(plane);
 
 const dirColor = 0xffffbb;
 const dirIntensity = 2.0;
