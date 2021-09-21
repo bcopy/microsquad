@@ -53,8 +53,8 @@ class HomieController():
             if(self.event_source is not None):
                 logger.debut("New terminal detected : {}".format(node.device["device-id"]))
                 self.event_source.on_next(MicroSquadEvent(EventType.TERMINAL_DISCOVERED,node.device["device-id"]))
-            # Forward the event to any RxPy observers
-            self.event_source.on_next(MicroSquadEvent(EventType[str(node.name+"_"+property)],node.device["device-id"],value))
+                # Forward the event to any RxPy observers
+                self.event_source.on_next(MicroSquadEvent(EventType[str(node.name+"_"+property)],node.device["device-id"],value))
 
         if(node.name.startswith("game") ):
             if(property == "audience-code" and value not in self._known_games):
