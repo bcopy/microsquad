@@ -1,7 +1,7 @@
 import { Player } from "./player";
 import { Vector3 } from "three";
 import { Team } from "./team";
-import { Observer} from "rxjs";
+import { Observable, Observer} from "rxjs";
 import { MqttMicrosquadEventType, MqttUpdateEvent } from "./mqtt";
 
 export class PlayerManager {
@@ -19,9 +19,10 @@ export class PlayerManager {
         error: err => console.log("Error handling MQTT Update Event "+err)
     };
 
-    constructor () {
+    constructor (observable: Observable<MqttUpdateEvent>) {
         this.defaultTeam = new Team("__default__", [], true);
         this.teams["__default__"] = this.defaultTeam;
+        observable.subscribe(this.observer);
     }
 
     handleMQTTUpdateEvent(event : MqttUpdateEvent){

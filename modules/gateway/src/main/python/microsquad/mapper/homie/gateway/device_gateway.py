@@ -5,6 +5,7 @@ import logging
 from homie.device_base import Device_Base
 
 from homie.node.property.property_string import Property_String
+from homie.node.property.property_boolean import Property_Boolean
 from homie.node.node_base import Node_Base
 from rx3 import Observable
 
@@ -40,7 +41,9 @@ class DeviceGateway(Device_Base):
 
         self._scoreboard = Node_Base(self,id="scoreboard", name="Scoreboard", type_="scoreboard")
         self.add_node(self._scoreboard)
-        self._scoreboard.add_property(Property_String(node = self._scoreboard, id="score",name="score" ))
+        self._scoreboard.add_property(Property_String(node = self._scoreboard, id="score",name="Score" ))
+        self._scoreboard.add_property(Property_String(node = self._scoreboard, id="image",name="Image" ))
+        self._scoreboard.add_property(Property_String(node = self._scoreboard, id="show",name="Show" ))
 
         self._player_manager = NodePlayerManager(self)
         self.add_node(self._player_manager)

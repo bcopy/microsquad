@@ -1,7 +1,9 @@
 import * as THREE from "three";
 import { Context } from "./updateObject";
+import { MqttMicrosquadEventType, MqttUpdateEvent } from "./mqtt";
+import { Observable } from "rxjs";
 
-export class Billboard {
+export class Scoreboard {
     mesh: THREE.Mesh;
     context: Context;
     geometry: THREE.PlaneGeometry;
@@ -10,8 +12,17 @@ export class Billboard {
     position = new THREE.Vector3(0, 5, 10);
     rotation = new THREE.Euler(0, Math.PI, 0);
 
-    constructor(context: Context) {
+    constructor(context: Context, observable: Observable<MqttUpdateEvent>) {
         this.context = context;
+        observable.subscribe(this.observer);
+    }
+
+    observer = {
+        next: (event) => {this.handleMQTTUpdateEvent(event)},
+        error: err => console.log("Error handling MQTT Update Event "+err)
+    }
+
+    handleMQTTUpdateEvent(event : MqttUpdateEvent){
     }
 
     setBase64Image(base64Image: string) {

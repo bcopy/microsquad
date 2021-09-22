@@ -7,7 +7,7 @@ import { Context, UpdateObject } from "./updateObject";
 import envConfig from './config';
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { Player } from "./player";
-import { Billboard } from "./billboard";
+import { Scoreboard } from "./scoreboard";
 
 var config = envConfig;
 
@@ -21,7 +21,7 @@ var mqttClientId : string;
 
 const playerSubject : Subject<MqttUpdateEvent> = new Subject();
 const teamSubject : Subject<MqttUpdateEvent> = new Subject();
-const billboardSubject : Subject<MqttUpdateEvent> = new Subject();
+const scoreboardSubject : Subject<MqttUpdateEvent> = new Subject();
 
 var sessionCode = "session-default";
 
@@ -157,19 +157,16 @@ var context : Context = {
 };
 UpdateObject.context = context;
 
-var playerManager = new PlayerManager();
+var playerManager = new PlayerManager(playerSubject);
 
 window['playerManager'] = playerManager;
-
-// Connect the playerManager to MQTT update events
-playerSubject.subscribe(playerManager.observer);
 
 var addPlayerButton : HTMLButtonElement = <HTMLButtonElement>document.getElementById("add-player");
 addPlayerButton.addEventListener('click', () => { playerManager.addPlayer("Player:"+ Math.random().toString(36).substr(2, 5)) });
 
-var billboard = new Billboard(UpdateObject.context);
+var scoreboard = new Scoreboard(UpdateObject.context, scoreboardSubject);
 
-window['billboard'] = billboard;
+window['scoreboard'] = scoreboard;
 ////////////////////////////////////////// ASSET LOADING ///////////////////////////////////////////
 
 const manager = new THREE.LoadingManager();
@@ -390,12 +387,13 @@ function commandHandler(incomingTopic, value) {
     if (topicParts[0] == "gateway") {
         const PLAYER_NODE_PREFIX = "player-";
         const TEAM_NODE_PREFIX = "team-";
+        const SCOREBOARD_NODE_PREFIX = "scoreboard";
 
         /////////////
         // If the message concerns a player or a team, we store its state for later reference
         // Eventually, we could keep it in a store implementation - for the time being, maps of maps
         if (topicParts[1].startsWith(PLAYER_NODE_PREFIX) ||
-            topicParts[1].startsWith(TEAM_NODE_PREFIX)) {
+            topicParts[1].startsWith(TEAM_NODE_PREFIX) ) {
             let devicePrefix : string;
             let stateMap : Map<string,any>;
             let propertyName : string;
@@ -421,7 +419,10 @@ function commandHandler(incomingTopic, value) {
 
                 subject.next(new MqttUpdateEvent(eventType, deviceId, propertyName, value));
             }
+        } else if (topicParts[1].startsWith(SCOREBOARD_NODE_PREFIX)){
+            scoreboardSubject.next(new MqttUpdateEvent(MqttMicrosquadEventType.SCOREBOARD_UPDATE, null, topicParts[2], value));
         }
+
         //
         ////////////////
     }
