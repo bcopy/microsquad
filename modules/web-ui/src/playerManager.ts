@@ -30,7 +30,7 @@ export class PlayerManager {
         let playerId = event.id
 
         if(!this.hasPlayer(playerId)){
-            this.addPlayer(playerId);
+            this.addPlayer(playerId, false);
         }
 
         switch (event.property) {
@@ -114,10 +114,12 @@ export class PlayerManager {
         return id in this.players;
     }
 
-    addPlayer(id: string) {
+    addPlayer(id: string, refresh: boolean) {
         if(!this.hasPlayer(id)){
             this.players[id] = new Player(id, this.defaultTeam);
-            this.updatePlayerPositions();
+            if(refresh){
+              this.updatePlayerPositions();
+            }
         }
     }
 
