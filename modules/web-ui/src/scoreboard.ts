@@ -23,6 +23,24 @@ export class Scoreboard {
     }
 
     handleMQTTUpdateEvent(event : MqttUpdateEvent){
+        if(event.type === MqttMicrosquadEventType.SCOREBOARD_UPDATE){
+            switch(event.property){
+                case "show":
+                    if(this.mesh){
+                      this.mesh.visible = Boolean(event.newValue).valueOf();
+                    }
+                    break;
+                case "image":
+                    this.setBase64Image(event.newValue);
+                    break;
+                case "score":
+                    // TODO: Superimpose score over image, if not empty
+                    break;
+                default:
+                    console.log("Unhandled scoreboard property :"+event.property);
+            }
+        }
+
     }
 
     setBase64Image(base64Image: string) {

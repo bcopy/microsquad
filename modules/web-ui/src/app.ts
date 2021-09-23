@@ -356,24 +356,6 @@ function onMessageArrived(message : any) {
 //     }
 // }
 
-// function billboardCommandHandler(command: string[]) {
-//     switch (command[0]) {
-//         case "show":
-//             if (command[1]) {
-//                 billboard.setBase64Image(command.splice(1).join(','));
-//             } else {
-//                 billboard.mesh.visible = true;
-//             }
-//             break;
-        
-//         case 'hide':
-//             billboard.mesh.visible = false;
-//             break
-
-//         default:
-//             break;
-//     }
-// }
 
 function commandHandler(incomingTopic, value) {
     let topic = incomingTopic.substring(mqttSubscriptionRoot.length-1);
