@@ -83,9 +83,11 @@ export class Player extends UpdateObject {
         if (this.dialog_box) {
             this.dialog_box.destroy();
         }
-        let p = this.position.clone();
-        p.y += Player.dialog_height * this.scale;
-        this.dialog_box = new DialogBox3D(message, p, 4);
+        if( ! (message === "")){
+            let p = this.position.clone();
+            p.y += Player.dialog_height * this.scale;
+            this.dialog_box = new DialogBox3D(message, p, 4);
+        }
     }
 
     set accessory(name: string) {
