@@ -59,43 +59,47 @@ var assetsInitialized:boolean = false;
 loader.load('assets/assets.json',
     function ( data ) {
         assetsConfig = JSON.parse(<string>data);
-        initializeAssetsSettings();
+
+        //load a text file and output the result to the console
+        loader.load(
+            // resource URL
+            'conf/config.json',
+
+            // onLoad callback
+            function ( data ) {
+                config = JSON.parse(<string>data);
+                initializeAssetsSettings();
+                startMqttSubscriptions();
+
+            },
+            undefined,
+            // onError callback
+            function ( err ) {
+                console.error( 'Could not load JSON configuration at conf/config.json - using Node env configuration' );
+                initializeAssetsSettings();
+                startMqttSubscriptions();
+            }
+        );
+        
     },
     undefined,
     // onError callback
     function ( err ) {
-        console.error( 'Could not load assets JSON configuration at conf/assets/assets.json' );
+        console.error( 'Could not load assets JSON configuration at assets/assets.json' );
     }
 )
 
-//load a text file and output the result to the console
-loader.load(
-	// resource URL
-	'conf/config.json',
-
-	// onLoad callback
-	function ( data ) {
-		config = JSON.parse(<string>data);
-        startMqttSubscriptions();
-	},
-    undefined,
-    // onError callback
-	function ( err ) {
-		console.error( 'Could not load JSON configuration at conf/config.json - using Node env configuration' );
-        startMqttSubscriptions();
-	}
-);
 
 
 //////////////////////////////////////////// MQTT SETUP ////////////////////////////////////////////
 
 
-// Connect subscribe & publish buttons
-var subButton : HTMLButtonElement = <HTMLButtonElement>document.getElementById("subscribe-button");
-subButton.addEventListener('click', () => { _btnSubscribe() } );
+// // Connect subscribe & publish buttons
+// var subButton : HTMLButtonElement = <HTMLButtonElement>document.getElementById("subscribe-button");
+// subButton.addEventListener('click', () => { _btnSubscribe() } );
 
-var pubButton : HTMLButtonElement = <HTMLButtonElement>document.getElementById("publish-button");
-pubButton.addEventListener('click', () => { _btnPublish() } );
+// var pubButton : HTMLButtonElement = <HTMLButtonElement>document.getElementById("publish-button");
+// pubButton.addEventListener('click', () => { _btnPublish() } );
 
 
 /////////////////////////////////////////// SCENE SETUP ////////////////////////////////////////////
@@ -417,26 +421,26 @@ function onMqttConnect() {
         mqttTopicRoot = config.MQTT_TOPIC_ROOT
     }
     mqttSubscriptionRoot = mqttTopicRoot +"/"+sessionCode+"/#";
-    mqttClient.subscribe(mqttSubscriptionRoot);
-    subButton.disabled = false;
-    pubButton.disabled = false;
+    setTimeout(function(){mqttClient.subscribe(mqttSubscriptionRoot)},500);
+    // subButton.disabled = false;
+    // pubButton.disabled = false;
 }
 
 function onMqttConnectionLost(response) {
     if (response.errorCode !== 0) {
         console.error("Connection lost: " + response.errorMessage);
-        subButton.disabled = true;
-        subButton.disabled = true;
+        // subButton.disabled = true;
+        // pubButton.disabled = true;
     }
 }
 
-function _btnPublish() {
-    let topic = (<HTMLInputElement>document.getElementById("pub-topic")).value;
-    let payload = (<HTMLInputElement>document.getElementById("pub-payload")).value;
-    mqttClient.publish(topic, payload);
-}
+// function _btnPublish() {
+//     let topic = (<HTMLInputElement>document.getElementById("pub-topic")).value;
+//     let payload = (<HTMLInputElement>document.getElementById("pub-payload")).value;
+//     mqttClient.publish(topic, payload);
+// }
 
-function _btnSubscribe() {
-    let topic = (<HTMLInputElement>document.getElementById("sub-topic")).value;
-    mqttClient.subscribe(topic);
-}
+// function _btnSubscribe() {
+//     let topic = (<HTMLInputElement>document.getElementById("sub-topic")).value;
+//     mqttClient.subscribe(topic);
+// }
