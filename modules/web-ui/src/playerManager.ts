@@ -53,7 +53,7 @@ export class PlayerManager {
             //     playerManager.assignTeam(playerID, command[1]);
             //     break;
             default:
-                console.warn(`PlayerManager : ${event.property} was not a recognized.`)
+                console.warn(`PlayerManager : ${event.property} was not a recognized property.`)
                 break;
         }
         this.updatePlayerPositions();
