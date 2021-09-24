@@ -36,7 +36,7 @@ const loader = new THREE.FileLoader();
 function startMqttSubscriptions(){
     const queryString = window.location.search;
     const urlParams = new URLSearchParams(window.location.search);
-    sessionCode = urlParams.get('sc') ?? "default-session";
+    sessionCode = urlParams.get('sc') ?? "session-default";
     const urlClientId = urlParams.get('ci');
     if (urlClientId != null) {
         mqttClientId = "microsquad-web:" + urlClientId; // if specified in the URL, retain the same client ID
@@ -91,18 +91,44 @@ loader.load('assets/assets.json',
 
 
 
-//////////////////////////////////////////// MQTT SETUP ////////////////////////////////////////////
-
-
-// // Connect subscribe & publish buttons
-// var subButton : HTMLButtonElement = <HTMLButtonElement>document.getElementById("subscribe-button");
-// subButton.addEventListener('click', () => { _btnSubscribe() } );
-
-// var pubButton : HTMLButtonElement = <HTMLButtonElement>document.getElementById("publish-button");
-// pubButton.addEventListener('click', () => { _btnPublish() } );
-
 
 /////////////////////////////////////////// SCENE SETUP ////////////////////////////////////////////
+
+function fitCameraToObject( cam : THREE.PerspectiveCamera, object : THREE.Object3D, offset, cntrls : OrbitControls ) {
+
+    offset = offset || 1.25;
+    const boundingBox = new THREE.Box3();
+
+    // get bounding box of object - this will be used to setup controls and camera
+    boundingBox.setFromObject( object );
+    const center = new THREE.Vector3()
+    boundingBox.getCenter(center);
+    const size = boundingBox.getSize(center);
+
+    // get the max side of the bounding box (fits to width OR height as needed )
+    const maxDim = Math.max( size.x, size.y, size.z );
+    const fov = cam.fov * ( Math.PI / 180 );
+    let camZ = Math.abs( maxDim / 4 * Math.tan( fov * 2 ) );
+
+    camZ *= offset; // zoom out a little so that objects don't fill the screen
+    cam.position.z = camZ;
+
+    const minZ = boundingBox.min.z;
+    const cameraToFarEdge = ( minZ < 0 ) ? -minZ + camZ : camZ - minZ;
+
+    cam.far = cameraToFarEdge * 3;
+    cam.updateProjectionMatrix();
+
+    if ( cntrls ) {
+      // set camera to rotate around center of loaded object
+      cntrls.target = center;
+      // prevent camera from zooming out far enough to create far plane cutoff
+      cntrls.maxDistance = cameraToFarEdge * 2;
+      cntrls.saveState();
+    } else {
+        cam.lookAt( center )
+   }
+}
 
 const renderer = new THREE.WebGLRenderer( {antialias: true} );
 renderer.setPixelRatio( window.devicePixelRatio );
@@ -138,18 +164,19 @@ const camera = new THREE.PerspectiveCamera(
     window.innerWidth / window.innerHeight,     // Ratio
     0.1, 1000                                   // Near / Far Clip
 );
-camera.position.set(0, 0, -10);
+camera.position.set(0, 0, -2);
+camera.zoom = 20;
 
 const controls = new OrbitControls( camera, renderer.domElement );
-controls.enableDamping = true;
-controls.dampingFactor = 0.1;
+controls.enableDamping = false;
+// controls.dampingFactor = 0.1;
 controls.enablePan = false;
-controls.target.set(0, 3, 1);
+controls.target.set(0, 4, 1);
 controls.minPolarAngle = controls.getPolarAngle();
 controls.maxPolarAngle = controls.getPolarAngle();
 controls.maxAzimuthAngle = controls.getAzimuthalAngle();
 controls.minAzimuthAngle = controls.getAzimuthalAngle();
-let dist = camera.position.distanceTo(controls.target);
+// let dist = camera.position.distanceTo(controls.target);
 controls.maxDistance = 100;
 camera.updateMatrixWorld();
 
@@ -167,6 +194,10 @@ window['playerManager'] = playerManager;
 
 var addPlayerButton : HTMLButtonElement = <HTMLButtonElement>document.getElementById("add-player");
 addPlayerButton.addEventListener('click', () => { playerManager.addPlayer("Player:"+ Math.random().toString(36).substr(2, 5), true) });
+
+
+var zoomScreenButton : HTMLButtonElement = <HTMLButtonElement>document.getElementById("zoom-screen");
+zoomScreenButton.addEventListener('click', () => { fitCameraToObject(camera,playerManager.players["jojo"].model, 1.25,controls) });
 
 var scoreboard = new Scoreboard(UpdateObject.context, scoreboardSubject);
 
