@@ -8,8 +8,8 @@ export class Scoreboard {
     context: Context;
     geometry: THREE.PlaneGeometry;
     material: THREE.MeshBasicMaterial;
-    height = 4.5;
-    position = new THREE.Vector3(0, 5, 10);
+    height = 9;
+    position = new THREE.Vector3(0, 7, 15);
     rotation = new THREE.Euler(0, Math.PI, 0);
 
     constructor(context: Context, observable: Observable<MqttUpdateEvent>) {
