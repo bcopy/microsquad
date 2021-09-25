@@ -49,9 +49,9 @@ export class PlayerManager {
             case "accessory":
                 this.players[playerId].accessory = event.newValue;
                 break;
-            // case _cmdStringAssignTeam:
-            //     playerManager.assignTeam(playerID, command[1]);
-            //     break;
+            case "nickname":
+                this.players[playerId].nickname = event.newValue;
+                break;
             default:
                 console.warn(`PlayerManager : ${event.property} was not a recognized property.`)
                 break;

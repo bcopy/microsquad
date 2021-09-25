@@ -11,13 +11,16 @@ export class Player extends UpdateObject {
     static gltf : GLTF;
     static animations = {};
     static model_scale = 0.7;
-    static nametag_height = 4.8;
+    static nametag_vertical_offset = -0.8;
     static dialog_height = 4.8;
     static accessories;
     static skins = {};
 
     id : string;
     order: number;
+
+    private _nickname : string;
+    
     team : Team;
     model : Object3D;
     model_loaded : boolean = false;
@@ -34,7 +37,7 @@ export class Player extends UpdateObject {
         this.order = order;
         team.addPlayer(this);
 
-        this.nametag = new TextBox3D(id, new Vector3(0, 0, 0));
+        this.nametag = new TextBox3D(id, new Vector3(0, 0, 0), false, "20px");
         this.nametag.visible = false;
 
         if (Player.gltf) {
@@ -46,6 +49,8 @@ export class Player extends UpdateObject {
         this.model_loaded = true;
         this.model = SkeletonUtils.clone(Player.gltf.scene);
         this.model.scale.set( Player.model_scale, Player.model_scale, Player.model_scale );
+        this.model.castShadow = true;
+        this.model.receiveShadow = true;
         UpdateObject.context.scene.add( this.model );
         
         // Set random skin
@@ -125,6 +130,20 @@ export class Player extends UpdateObject {
         return this._accessory;
     }
 
+    set nickname(newHTMLName: string){
+        this._nickname = newHTMLName;
+        if(! (this._nickname === "") ){
+            this.nametag.textElement.innerHTML = this._nickname;
+            this.nametag.visible = true;
+        }else{
+            this.nametag.visible = false;
+        }
+
+    }
+    get nickname(){
+        return this._nickname;
+    }
+
     set skin(name: string) {
         if (name in Player.skins) {
             var mat; // https://discourse.threejs.org/t/giving-a-glb-a-texture-in-code/15071/6
@@ -163,7 +182,7 @@ export class Player extends UpdateObject {
     set position(val: Vector3) {
         if (this.model) {
             this.model.position.set(val.x, val.y, val.z);
-            this.nametag.position.copy(this.model.position).y += Player.nametag_height * this.scale;
+            this.nametag.position.copy(this.model.position).y += Player.nametag_vertical_offset * this.scale;
         }
     }
 
@@ -174,7 +193,7 @@ export class Player extends UpdateObject {
     set scale(val : number) {
         if (this.model) {
             this.model.scale.set(val, val, val);
-            this.nametag.position.copy(this.model.position).y += Player.nametag_height * this.scale;
+            this.nametag.position.copy(this.model.position).y += Player.nametag_vertical_offset * this.scale;
         }
     }
 

@@ -15,7 +15,7 @@ export class TextBox3D extends UpdateObject {
 
     private _visible: boolean = true;
 
-    constructor (text: string, position: Vector3, hasTriangle?: boolean) {
+    constructor (text: string,position: Vector3, hasTriangle?: boolean, fontSize: string = "34px") {
         super();
         this.position = position;
         TextBox3D.canvas = UpdateObject.context.renderer.domElement;
@@ -26,7 +26,7 @@ export class TextBox3D extends UpdateObject {
         this.textElement.style.width = 'fit-content';
         this.textElement.style.height = 'fit-content';
         this.textElement.style.padding = '5px';
-        this.textElement.style.fontSize = '34px';
+        this.textElement.style.fontSize = fontSize;
         this.textElement.style.backgroundColor = this.color;
         this.textElement.style.borderRadius = '15px';
         this.textElement.innerHTML = text;
