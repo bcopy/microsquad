@@ -94,9 +94,9 @@ loader.load('assets/assets.json',
 
 /////////////////////////////////////////// SCENE SETUP ////////////////////////////////////////////
 
-function fitCameraToObject( cam : THREE.PerspectiveCamera, object : THREE.Object3D, offset, cntrls : OrbitControls ) {
+function fitCameraToObject( cam : THREE.PerspectiveCamera, object : THREE.Object3D, offset?: number, cntrls? : OrbitControls ) {
 
-    offset = offset || 1.25;
+    offset = offset || 1.1;
     const boundingBox = new THREE.Box3();
 
     // get bounding box of object - this will be used to setup controls and camera
@@ -152,14 +152,10 @@ plane.rotateX( - Math.PI / 2);
 scene.add(plane);
 
 const dirColor = 0xffffaa;
-const dirIntensity = 0.6;
+const dirIntensity = 0.7;
 const dirlight = new THREE.DirectionalLight(dirColor, dirIntensity);
 dirlight.position.set(0,2,0);
 dirlight.castShadow = true;
-dirlight.shadow.mapSize.width = 512; // default
-dirlight.shadow.mapSize.height = 512; // default
-dirlight.shadow.camera.near = 0.5; // default
-dirlight.shadow.camera.far = 100; // default
 const helper = new THREE.DirectionalLightHelper(dirlight);
 
 const clock = new THREE.Clock();
@@ -171,7 +167,7 @@ const camera = new THREE.PerspectiveCamera(
     window.innerWidth / window.innerHeight,     // Ratio
     0.1, 1000                                   // Near / Far Clip
 );
-camera.position.set(0, 0, -2.5);
+camera.position.set(0, 0, -6);
 // camera.zoom = 20;
 
 const controls = new OrbitControls( camera, renderer.domElement );
@@ -204,7 +200,7 @@ addPlayerButton.addEventListener('click', () => { playerManager.addPlayer("Playe
 
 
 var zoomScreenButton : HTMLButtonElement = <HTMLButtonElement>document.getElementById("zoom-screen");
-zoomScreenButton.addEventListener('click', () => { fitCameraToObject(camera,playerManager.players["jojo"].model, 1.25,controls) });
+zoomScreenButton.addEventListener('click', () => { fitCameraToObject(camera,scoreboard.mesh) });
 
 var scoreboard = new Scoreboard(UpdateObject.context, scoreboardSubject);
 
