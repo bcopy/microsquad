@@ -148,6 +148,9 @@ export class Player extends UpdateObject {
         if (name in Player.skins) {
             var mat; // https://discourse.threejs.org/t/giving-a-glb-a-texture-in-code/15071/6
 
+            this.model.castShadow = true;
+            this.model.receiveShadow = true;
+
             this.model.traverse( (object) => {
     
                 if ( object instanceof Mesh ) {

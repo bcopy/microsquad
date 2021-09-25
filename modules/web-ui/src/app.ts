@@ -130,30 +130,37 @@ function fitCameraToObject( cam : THREE.PerspectiveCamera, object : THREE.Object
    }
 }
 
-const renderer = new THREE.WebGLRenderer( {antialias: true} );
+const renderer = new THREE.WebGLRenderer(  {antialias: true } );
 renderer.setPixelRatio( window.devicePixelRatio );
 renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap; 
 renderer.outputEncoding = THREE.sRGBEncoding;
 document.body.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x418afb); //0xf5ca6e;
-const ambientColor = 0xFFFFFF;
-const ambiIntensity = 0.8;
+scene.background = new THREE.Color(0x418afb); 
+const ambientColor = 0xFFFFC5;
+const ambiIntensity = 0.7;
 const ambilight = new THREE.AmbientLight(ambientColor, ambiIntensity);
 
 const geo = new THREE.CircleGeometry(20, 20, 32);
-const mat = new THREE.MeshBasicMaterial({ color: 0xf5ca6e, side: THREE.DoubleSide });
+const mat = new THREE.MeshStandardMaterial({ color: 0xe4ca4c, side: THREE.DoubleSide });
 var plane = new THREE.Mesh(geo, mat);
+plane.receiveShadow = true;
 plane.rotateX( - Math.PI / 2);
 scene.add(plane);
 
-const dirColor = 0xffffbb;
-const dirIntensity = 2.0;
+const dirColor = 0xffffaa;
+const dirIntensity = 0.6;
 const dirlight = new THREE.DirectionalLight(dirColor, dirIntensity);
+dirlight.position.set(0,2,0);
+dirlight.castShadow = true;
+dirlight.shadow.mapSize.width = 512; // default
+dirlight.shadow.mapSize.height = 512; // default
+dirlight.shadow.camera.near = 0.5; // default
+dirlight.shadow.camera.far = 100; // default
 const helper = new THREE.DirectionalLightHelper(dirlight);
-
-
 
 const clock = new THREE.Clock();
 var objects: UpdateObject[] = [];
@@ -164,8 +171,8 @@ const camera = new THREE.PerspectiveCamera(
     window.innerWidth / window.innerHeight,     // Ratio
     0.1, 1000                                   // Near / Far Clip
 );
-camera.position.set(0, 0, -2);
-camera.zoom = 20;
+camera.position.set(0, 0, -2.5);
+// camera.zoom = 20;
 
 const controls = new OrbitControls( camera, renderer.domElement );
 controls.enableDamping = false;
@@ -177,7 +184,7 @@ controls.maxPolarAngle = controls.getPolarAngle();
 controls.maxAzimuthAngle = controls.getAzimuthalAngle();
 controls.minAzimuthAngle = controls.getAzimuthalAngle();
 // let dist = camera.position.distanceTo(controls.target);
-controls.maxDistance = 100;
+controls.maxDistance = 10;
 camera.updateMatrixWorld();
 
 var context : Context = {
@@ -252,6 +259,10 @@ function initializeAssetsSettings(){
     gltfLoader.load(asset_url, ( gltf ) => {
 
         Player.gltf = gltf;
+
+        gltf.scene.traverse( function( node ) {
+            if ( node.isObject3D ) { node.castShadow = true; }
+        } );
     
         gltf.animations.forEach(anim => {
     
