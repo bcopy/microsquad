@@ -55,8 +55,11 @@ class NodeTeamManager(Node_Base):
             logger.info("Adding Player {} to Team {}".format(player,team))
             if(player not in self.teams_to_players[team]):
                 self.teams_to_players[team].append(player)
+                self.refresh_team_node(team)
                 self.refresh_teams_list()
                 logger.debug("Added Player {} to Team {}".format(player,team))
+            else:
+              logger.debug("Player {} is already in Team {} !".format(player,team))
         else:
             logger.info("Team {} does not exist. Not adding player {}.".format(team, player))
     
@@ -71,5 +74,12 @@ class NodeTeamManager(Node_Base):
                     logger.debug("Removed Player {} from Team {}".format(player,team))
         else:
             logger.info("Team {} does not exist. Not removing player {}.".format(team, player))
+
+    def refresh_team_node(self,team_to_refresh):
+        players_list = self.teams_to_players[team_to_refresh]
+        self.device.get_node("team-"+team_to_refresh).get_property("players").value = ",".join(players_list)
+
+
+
         
 
