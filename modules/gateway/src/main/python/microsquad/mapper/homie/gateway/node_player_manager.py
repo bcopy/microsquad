@@ -20,10 +20,11 @@ class NodePlayerManager(Node_Base):
       self.add_property(Property_String(self, id="list", name="list" ))
     
     def remove_player(self,identifier):
-        logger.info("Removing Player : {}".format(identifier))
-        self.players.remove(identifier)
-        self.device.remove_node("player-"+identifier)
-        self.get_property("list").value = ",".join(self.players)
+        if(identifier in self.players):
+            logger.info("Removing Player : {}".format(identifier))
+            self.players.remove(identifier)
+            self.device.remove_node("player-"+identifier)
+            self.get_property("list").value = ",".join(self.players)
 
     def add_player(self,identifier):
         """
@@ -33,9 +34,10 @@ class NodePlayerManager(Node_Base):
                 - id:name:nickname
                 - or empty (random UUID)
         """
-        new_player_index = self.player_counter
-        self.player_counter += 1
-        self.device.add_node(NodePlayer(self.device,id="player-"+identifier, name=identifier, order = new_player_index))
-        self.players.append(identifier)
-        self.get_property("list").value = ",".join(self.players)
-        logger.info("Player Added : {}".format(identifier))
+        if(identifier not in self.players):
+            new_player_index = self.player_counter
+            self.player_counter += 1
+            self.device.add_node(NodePlayer(self.device,id="player-"+identifier, name=identifier, order = new_player_index))
+            self.players.append(identifier)
+            self.get_property("list").value = ",".join(self.players)
+            logger.info("Player Added : {}".format(identifier))
