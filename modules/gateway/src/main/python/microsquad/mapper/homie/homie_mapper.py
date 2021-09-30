@@ -10,6 +10,7 @@ from ..abstract_mapper import AbstractMapper
 
 from ...event import EventType,MicroSquadEvent
 
+logger = logging.getLogger(__name__)
 
 def _add_properties_to_tags(node, properties, tags) -> None:
     for prop in properties:
@@ -29,7 +30,7 @@ class HomieMapper(AbstractMapper):
         """ With a Homie implementation, we are not mapping low-level MQTT messages
             but rather update calls made on properties.
             This is therefore a no-op implementation.
-            Instead, we implement a RxPy subscriber, and pass on all command events
+            Instead, we implement a RxPy observable, and pass on all command events
             to the connector.
         """
         pass
@@ -40,6 +41,7 @@ class HomieMapper(AbstractMapper):
         # TODO:  The mapper could become generic and only parse line protocol events
         #        to transform them into reactive events.
         try:
+            # logger.debug(">> Raw message '" + message+"'")
             msg = self._parser.parse(message)
             measurement = msg[0]
             tags = msg[1]
