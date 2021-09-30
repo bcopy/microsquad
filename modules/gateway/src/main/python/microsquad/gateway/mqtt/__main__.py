@@ -1,6 +1,7 @@
 from dotenv import load_dotenv
 import time
 import argparse
+import logging
 from homie.device_base import HOMIE_SETTINGS
 
 
@@ -10,6 +11,9 @@ import rx3
 
 load_dotenv()
 
+logging.basicConfig(encoding='ascii', level=logging.INFO)
+logging.getLogger('homie').setLevel(logging.WARN)
+
 MQTT_SETTINGS = {
         'MQTT_BROKER' : 'localhost',
         'MQTT_PORT' : 1883,
@@ -17,7 +21,8 @@ MQTT_SETTINGS = {
     }
 
 HOMIE_SETTINGS = {
-            "update_interval": 1
+            "update_interval": 1,
+            "topic": "microsquad"
         }
 
 # parser = argparse.ArgumentParser(description='Run a MicroSquad gateway.')
@@ -31,11 +36,8 @@ HOMIE_SETTINGS = {
 
 event_source = rx3.subject.Subject()
 
-# if args.connector == "dummy" or args.test == 1:
-#   gateway = HomieDummyGateway(HOMIE_SETTINGS, MQTT_SETTINGS, event_source)
-# # elif args.connector == "bitio":
 gateway = HomieBitioGateway(HOMIE_SETTINGS, MQTT_SETTINGS, event_source)
 gateway.start()
 
 while True:
-    time.sleep(50)
+    time.sleep(5)
