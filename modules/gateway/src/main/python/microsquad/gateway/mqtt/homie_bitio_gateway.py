@@ -25,7 +25,7 @@ class HomieBitioGateway:
         self._mqtt_settings = mqtt_settings
         self._gatewayDevice = DeviceGateway(event_source = self._event_source, homie_settings=self._homie_settings,mqtt_settings=self._mqtt_settings)
         self._mapper = HomieMapper(self._gatewayDevice, self._event_source)
-        self._connector = BitioConnector(self._mapper)
+        self._connector = BitioConnector(self._mapper, self._event_source)
 
     def start(self):
         self._gatewayDevice.start()

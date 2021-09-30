@@ -2,6 +2,12 @@ from abc import ABCMeta,abstractmethod
 
 import logging
 import threading
+from microsquad.event import EventType, MicroSquadEvent
+
+from rx3 import Observable
+from rx3.operators import filter
+
+logger = logging.getLogger(__name__)
 
 class AbstractConnector(metaclass=ABCMeta):
     """
@@ -19,8 +25,14 @@ class AbstractConnector(metaclass=ABCMeta):
     def dispatch_next(self):
         pass
 
-    def __init__(self):
+    def __init__(self, event_source: Observable):
         self._thread_terminate = True
+        self._event_source = event_source
+        self._event_source.pipe(
+            filter(lambda e: e.event_type == EventType.TERMINAL_BROADCAST)
+        ).subscribe(
+            on_next = lambda evt: self.queue(evt.payload)
+        )
         
     def start(self):
         self._thread_terminate = False

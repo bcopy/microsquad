@@ -22,7 +22,7 @@ class HomieDummyGateway:
         self._mqtt_settings = mqtt_settings
         self.deviceGateway = DeviceGateway(event_source = self._event_source, homie_settings=self._homie_settings,mqtt_settings=self._mqtt_settings)
         self.mapper = HomieMapper(self.deviceGateway, self._event_source)
-        self.connector = DummyConnector(self.mapper)
+        self.connector = DummyConnector(self.mapper, self._event_source)
 
     def start(self):
         self.deviceGateway.start()
@@ -41,7 +41,8 @@ def main():
         }
 
     HOMIE_SETTINGS = {
-                "update_interval": 1
+                "update_interval": 1,
+                "topic": "microsquad"
             }
 
     gateway = HomieDummyGateway(HOMIE_SETTINGS, MQTT_SETTINGS, Subject())
