@@ -2,7 +2,7 @@
 
 ```
 python3 -m venv usquad-venv
-echo "`pwd`/src/main/python" > usquad-venv/lib/python3.8/site-packages/gateway.pth
+echo "`pwd`/src/main/python `pwd`/src/test/python" > usquad-venv/lib/python3.8/site-packages/gateway.pth
 ```
 
 # How to use
