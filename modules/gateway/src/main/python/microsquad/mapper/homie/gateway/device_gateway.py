@@ -53,14 +53,17 @@ class DeviceGateway(Device_Base):
 
         self._terminals = {}
 
-        self._game = Node_Base(self,id="game", name="game", type_="game")
-        self.add_node(self._game)
+        self._game_node = Node_Base(self,id="game", name="game", type_="game")
+        self.add_node(self._game_node)
+        
         # self._game.add_property(Property_String(node = self._game, settable= True, set_value =self.update_script, id="script",name="Script" ))
-        self._game.add_property(Property_String(node = self._game, settable= True, set_value =self.update_game, id="game",name="Game" ))
-        self._game.add_property(Property_String(node = self._game, id="game-status",name="Game Status" ))
+        self._game_node.add_property(Property_String(node = self._game_node, settable= True, set_value =self.update_game, id="name",name="Name" ))
+        self._last_known_game : str = None
+
+        self._game_node.add_property(Property_String(node = self._game_node, id="game-status",name="Game Status" ))
         # self._game.add_property(Property_String(node = self._game, id="audience-code",name="audience-code" ))
         # self._game.add_property(Property_String(node = self._game, id="admin-code",name="admin-code" ))
-        self._game.add_property(Property_String(node = self._game, settable= True, set_value =self.update_broadcast, id="broadcast",name="Broadcast" ))
+        self._game_node.add_property(Property_String(node = self._game_node, settable= True, set_value =self.update_broadcast, id="broadcast",name="Broadcast" ))
 
         self._event_source = event_source
         if self._event_source is None:
@@ -81,6 +84,10 @@ class DeviceGateway(Device_Base):
     def terminals(self):
         return self._terminals
 
+    @property
+    def game_node(self):
+        return self._game_node
+
     # def update_script(self, new_script):
     #     """
     #     A new gaming script has been sent, we need to reset the game session, and execute it.
@@ -91,10 +98,14 @@ class DeviceGateway(Device_Base):
         """
         A new game should be started, execute it.
         """
-        self._event_source.on_next(MicroSquadEvent(EventType.GAME_START, payload=new_game))
+        if(new_game is None or new_game == ""):
+            self._event_source.on_next(MicroSquadEvent(EventType.GAME_STOP))
+        elif(not(self._game_node.get_property("game-status").value == EventType.GAME_START) or (self._last_known_game != new_game)):
+            self._event_source.on_next(MicroSquadEvent(EventType.GAME_START, payload=new_game))
+            self._last_known_game = new_game
 
     def update_broadcast(self, command):
         """
         A new broadcast command has been sent, we need to propagate it to all terminals
         """
-        self._event_source.on_next(MicroSquadEvent(EventType.TERMINAL_BROADCAST,None,command))
+        self._event_source.on_next(MicroSquadEvent(EventType.TERMINAL_BROADCAST,payload = command))
