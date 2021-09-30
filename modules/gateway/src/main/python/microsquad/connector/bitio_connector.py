@@ -2,6 +2,8 @@ from microbit import display,radio, sleep
 
 import logging
 
+from rx3 import Observable
+
 from queue import SimpleQueue,Empty
 
 from ..mapper.abstract_mapper import AbstractMapper
@@ -13,10 +15,11 @@ class BitioConnector(AbstractConnector):
     Simple Bitio connector implementation that uses the radio to receive messages.
     It also subscribes to a MicroSquadEvent source to queue up messages to the terminals.
     """
-    def __init__(self, mapper : AbstractMapper):
+    def __init__(self, mapper : AbstractMapper, event_source: Observable):
+      super().__init__(event_source)
       self._queue = SimpleQueue()
       self._mapper = mapper
-      radio.config(length=200, channel=12, group=12)
+      radio.config(length=128, channel=12, group=12)
       radio.on()
 
     def queue(self, message):
@@ -33,8 +36,8 @@ class BitioConnector(AbstractConnector):
 
         try:
             outgoing_msg = self._queue.get_nowait()
-            outgoing_msg_ascii = str(outgoing_msg.payload.decode('ascii'))
-            logging.debug("Sending " + outgoing_msg.topic+" "+ outgoing_msg_ascii +" (left "+str(len(self._queue))+")")
+            outgoing_msg_ascii = str(outgoing_msg.decode('ascii'))
+            logging.debug("Sending " + outgoing_msg_ascii +" (left "+str(len(self._queue))+")")
             radio.send(outgoing_msg_ascii)
         except Empty:
             pass
