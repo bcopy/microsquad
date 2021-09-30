@@ -13,6 +13,9 @@ class EventType(enum.Enum):
     TERMINAL_DISCOVERED = "terminal_discovered"
     GAME_DISCOVERED = "game_discovered"
     PLAYER_DISCOVERED = "player_discovered"
+
+    GAME_START = "game_start"
+    GAME_STOP = "game_stop"
     
     def equals(self, string):
        return self.value == string
