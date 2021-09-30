@@ -5,13 +5,13 @@ import radio
 SIMU = False
 try:
   import machine
-  DEVID = machine.unique_id()
+  DEVID = str(int.from_bytes(machine.unique_id(), "big"))
 except ImportError:
-  DEVID = "12345678-9123456789"
+  DEVID = "JOGE"
   SIMU = True
   print("Could not import machine module, DEVICE ID : "+str(DEVID))
 
-radio.config(channel=12, group=12)
+radio.config(channel=12, group=12, length=128)
 radio.on()
 
 IMG_SEND = [(Image.ARROW_N * (i/5)) for i in range(5, -1, -1)]
@@ -68,20 +68,20 @@ def usquad_image(tags, timestamp=None):
   _clear = (tags.get('clear', "true").lower()=="true")
   display.show(img, delay=_delay, wait=_wait, clear=_clear)
 
-def usquad_text(tags, timestamp=None):
-  text_str = tags['value'].replace("_", " ")
-  _delay = int(tags.get('delay',50))
-  _wait = (tags.get('wait', "true").lower()=="true")
-  _clear = (tags.get('clear', "true").lower()=="true")
-  display.show(text_str, delay=_delay, wait=_wait, clear=_clear)
+# def usquad_text(tags, timestamp=None):
+#   text_str = tags['value'].replace("_", " ")
+#   _delay = int(tags.get('delay',50))
+#   _wait = (tags.get('wait', "true").lower()=="true")
+#   _clear = (tags.get('clear', "true").lower()=="true")
+#   display.show(text_str, delay=_delay, wait=_wait, clear=_clear)
 
 def usquad_read_accel(tags= None, timestamp=None):
   x,y,z = accelerometer.get_values()
   usquad_send("read_accel", tags = {"x":x,"y":y,"z":z})
 
-def usquad_device_id(tags, timestamp=None):
-  global DEVID
-  DEVID = tags.get('id',machine.unique_id())
+# def usquad_device_id(tags, timestamp=None):
+#   global DEVID
+#   DEVID = tags.get('id',machine.unique_id())
 
 def usquad_vote(tags, timestamp=None):
   images_str = tags['value']
@@ -111,8 +111,8 @@ def usquad_vote(tags, timestamp=None):
 
 def usquad_buttons(tags = None, timestamp=None):
   global incoming
-  button_a.was_pressed()
-  button_b.was_pressed()
+  # button_a.was_pressed()
+  # button_b.was_pressed()
   display.show(Image.TRIANGLE)
   stop = False
   while not stop:
@@ -127,15 +127,15 @@ def usquad_buttons(tags = None, timestamp=None):
       stop = True
     else:
       sleep(200)
-      display.show(Image.TRIANGLE)
+      display.show(Image.SQUARE_SMALL)
       
   
 usquad_methods = {
   'image'     : usquad_image,
   'accel'     : usquad_read_accel,
-  'text'      : usquad_text,
+  # 'text'      : usquad_text,
   'vote'      : usquad_vote,
-  'device_id' : usquad_device_id,
+  # 'device_id' : usquad_device_id,
   'buttons'   : usquad_buttons
 }
 incoming = None
@@ -145,8 +145,8 @@ def poll_messages():
   global incoming
   if SIMU == False:
     incoming = radio.receive()
-  if button_a.was_pressed():
-    incoming = 'vote,value="99999:99999:99099:99999:99999;99999:55555:00000:55555:99999",duration=4000,votes=4'
+  # if button_a.was_pressed():
+    # incoming = 'vote,value="99999:99999:99099:99999:99999;99999:55555:00000:55555:99999",duration=4000,votes=4'
   
 display.show(Image.TARGET)
 usquad_send("bonjour")
@@ -170,4 +170,4 @@ while True:
     if execute:
       method(tags,stamp)
 
-  sleep(200)
+  sleep(100)
