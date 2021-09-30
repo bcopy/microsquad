@@ -6,6 +6,9 @@ from rx3.subject import Subject
 
 from microsquad.event import EventType
 
+import logging
+logging.getLogger('homie').setLevel(logging.WARN)
+
 class TestTerminalDevice(unittest.TestCase):
     def setUp(self):
         self.mqtt_settings = {

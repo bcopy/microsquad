@@ -5,6 +5,9 @@ import unittest
 
 from rx3.subject import Subject
 
+import logging
+logging.getLogger('homie').setLevel(logging.WARN)
+
 class TestGatewayDevice(unittest.TestCase):
     def setUp(self):
         mqtt_settings = {

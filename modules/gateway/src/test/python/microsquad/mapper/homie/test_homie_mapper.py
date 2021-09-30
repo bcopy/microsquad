@@ -6,6 +6,9 @@ from microsquad.mapper.homie.homie_mapper import HomieMapper
 from microsquad.mapper.homie.gateway.device_gateway import DeviceGateway
 from rx3.subject import Subject
 
+import logging
+logging.getLogger('homie').setLevel(logging.WARN)
+
 class TestHomieMapper(unittest.TestCase):
     def setUp(self):
         _mqtt_settings = {
@@ -24,20 +27,20 @@ class TestHomieMapper(unittest.TestCase):
     def test_bonjour_event(self):
         dev_id = "12345678"
         self.mapper.map_from_microbit('bonjour,dev_id={}'.format(dev_id))
-        assert 1 == len(self.received_events)
-        assert EventType.BONJOUR == self.received_events[0].event_type
-        assert dev_id == self.received_events[0].device_id
+        bonjour_events = list(filter(lambda evt: evt.event_type == EventType.BONJOUR, self.received_events))
+        assert 1 == len(bonjour_events)
+        assert dev_id == bonjour_events[0].device_id
 
     def test_read_accelerator_event(self):
         dev_id = "1234-5678"
         readings = {'x':-12,'y':80,'z':-60}
         self.mapper.map_from_microbit('read_accel,x={x},y={y},z={z},dev_id="{0}"'.format(dev_id,**readings))
-        assert 1 == len(self.received_events)
-        for evt in self.received_events:
-          assert EventType.ACCELERATOR == evt.event_type
+        accel_events = list(filter(lambda evt: evt.event_type == EventType.ACCELERATOR, self.received_events))
+        assert 1 == len(accel_events)
+        for evt in accel_events:
           assert dev_id == evt.device_id
         for k in readings:
-          assert readings[k] == int(self.received_events[0].payload[k])
+          assert readings[k] == int(accel_events[0].payload[k])
 
 
 if __name__ == '__main__':
