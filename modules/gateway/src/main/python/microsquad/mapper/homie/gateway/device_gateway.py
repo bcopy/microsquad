@@ -29,7 +29,7 @@ class DeviceGateway(Device_Base):
     def __init__(
         self,
         event_source : Observable,
-        device_id= "usquad-gateway",
+        device_id= "gateway",
         name="MicroSquad Gateway",
         homie_settings=None,
         mqtt_settings=None
@@ -55,10 +55,12 @@ class DeviceGateway(Device_Base):
 
         self._game = Node_Base(self,id="game", name="game", type_="game")
         self.add_node(self._game)
-        self._game.add_property(Property_String(node = self._game, settable= True, set_value =self.update_script, id="script",name="script" ))
-        self._game.add_property(Property_String(node = self._game, id="audience-code",name="audience-code" ))
-        self._game.add_property(Property_String(node = self._game, id="admin-code",name="admin-code" ))
-        self._game.add_property(Property_String(node = self._game, settable= True, set_value =self.update_broadcast, id="broadcast",name="broadcast" ))
+        # self._game.add_property(Property_String(node = self._game, settable= True, set_value =self.update_script, id="script",name="Script" ))
+        self._game.add_property(Property_String(node = self._game, settable= True, set_value =self.update_game, id="game",name="Game" ))
+        self._game.add_property(Property_String(node = self._game, id="game-status",name="Game Status" ))
+        # self._game.add_property(Property_String(node = self._game, id="audience-code",name="audience-code" ))
+        # self._game.add_property(Property_String(node = self._game, id="admin-code",name="admin-code" ))
+        self._game.add_property(Property_String(node = self._game, settable= True, set_value =self.update_broadcast, id="broadcast",name="Broadcast" ))
 
         self._event_source = event_source
         if self._event_source is None:
@@ -79,11 +81,17 @@ class DeviceGateway(Device_Base):
     def terminals(self):
         return self._terminals
 
-    def update_script(self, new_script):
+    # def update_script(self, new_script):
+    #     """
+    #     A new gaming script has been sent, we need to reset the game session, and execute it.
+    #     """
+    #     pass
+
+    def update_game(self, new_game):
         """
-        A new gaming script has been sent, we need to reset the game session, and execute it.
+        A new game should be started, execute it.
         """
-        pass
+        self._event_source.on_next(MicroSquadEvent(EventType.GAME_START, payload=new_game))
 
     def update_broadcast(self, command):
         """
