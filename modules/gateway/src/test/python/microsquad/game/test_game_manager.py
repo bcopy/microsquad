@@ -30,6 +30,22 @@ class TestGameManager(unittest.TestCase):
         time.sleep(0.5)
         test_game = self.game_manager.current_game
         assert isinstance(test_game,TestGame)
+        self._verify_events(test_game)
+        self.event_source.on_next(MicroSquadEvent(EventType.GAME_STOP))
+        time.sleep(0.3)
+        assert self.game_manager.current_game is None
+
+    def test_game_start_stop_via_device_gateway(self):
+        self.gateway.update_game("my_test_game")
+        time.sleep(0.5)
+        test_game = self.game_manager.current_game
+        assert isinstance(test_game,TestGame)
+        self._verify_events(test_game)
+        self.gateway.update_game("")
+        time.sleep(0.3)
+        assert self.game_manager.current_game is None
+        
+    def _verify_events(self, test_game):
         self.event_source.on_next(MicroSquadEvent(EventType.BUTTON, payload={"pressed":1,"count":1}))
         self.event_source.on_next(MicroSquadEvent(EventType.BUTTON, payload={"pressed":1,"count":2}))
         self.event_source.on_next(MicroSquadEvent(EventType.BUTTON, payload={"pressed":0,"count":2}))
@@ -41,29 +57,7 @@ class TestGameManager(unittest.TestCase):
         self.event_source.on_next(MicroSquadEvent(EventType.BUTTON, payload={"pressed":0,"count":2}))
         time.sleep(0.5)
         assert len(test_game.received_events)==3
-        self.event_source.on_next(MicroSquadEvent(EventType.GAME_STOP))
-        time.sleep(0.3)
-        assert self.game_manager.current_game is None
 
-    def test_game_start_stop_via_device_gateway(self):
-        self.gateway.update_game("my_test_game")
-        time.sleep(0.5)
-        test_game = self.game_manager.current_game
-        assert isinstance(test_game,TestGame)
-        self.event_source.on_next(MicroSquadEvent(EventType.BUTTON, payload={"pressed":1,"count":1}))
-        self.event_source.on_next(MicroSquadEvent(EventType.BUTTON, payload={"pressed":1,"count":2}))
-        self.event_source.on_next(MicroSquadEvent(EventType.BUTTON, payload={"pressed":0,"count":2}))
-        self.gateway.fire_transition("get_events")
-        time.sleep(0.5)
-        self.event_source.on_next(MicroSquadEvent(EventType.BUTTON, payload={"pressed":1,"count":1}))
-        self.event_source.on_next(MicroSquadEvent(EventType.BUTTON, payload={"pressed":1,"count":2}))
-        self.event_source.on_next(MicroSquadEvent(EventType.BUTTON, payload={"pressed":0,"count":2}))
-        time.sleep(0.5)
-        assert len(test_game.received_events)==3
-        self.gateway.update_game("")
-        time.sleep(0.3)
-        assert self.game_manager.current_game is None
-        
         
         
 
