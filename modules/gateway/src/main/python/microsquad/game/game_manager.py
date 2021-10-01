@@ -54,7 +54,7 @@ class GameManager():
               self._current_game = None
         elif(event.event_type == EventType.GAME_TRANSITION):
             if(self._current_game is not None):
-                if(event.payload in self._current_game.available_transitions):
+                if(event.payload in self._current_game.get_available_transitions()):
                     self._current_game.fire_transition(event.payload)
         elif(event.event_type == EventType.GAME_TRANSITIONS_UPDATED):
             if(self._current_game is not None and event.payload is not None):

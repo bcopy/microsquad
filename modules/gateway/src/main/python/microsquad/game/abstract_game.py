@@ -17,7 +17,7 @@ class AGame(metaclass=ABCMeta):
     def __init__(self, event_source: Observable, gateway : DeviceGateway) -> None:
         self._event_source = event_source
         self._device_gateway = gateway
-        self._available_transitions : str = []
+        self._available_transitions : list = []
         self._last_fired_transition = None
 
     @abstractmethod
@@ -35,7 +35,7 @@ class AGame(metaclass=ABCMeta):
     def stop(self) -> None:
         pass
 
-    def fire_transition(self, transition):
+    def fire_transition(self, transition) -> None:
         self._last_fired_transition = transition
 
     @property
@@ -50,12 +50,10 @@ class AGame(metaclass=ABCMeta):
     def device_gateway(self):
         return self._device_gateway
 
-    @property
-    def available_transitions(self):
+    def get_available_transitions(self) -> list:
         return self._available_transitions
 
-    @available_transitions.setter
-    def available_transitions(self,transitions):
+    def update_available_transitions(self,transitions:list) -> None:
         # TODO Add transition validation and/or transformation to JSON format
         self._available_transitions = transitions
-        self.event_source.on_next(MicroSquadEvent(EventType.GAME_TRANSITIONS_UPDATED,payload=self._available_transitions))
+        self.event_source.on_next(MicroSquadEvent(EventType.GAME_TRANSITIONS_UPDATED,payload=[t.value for t in self._available_transitions]))
