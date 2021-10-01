@@ -4,7 +4,7 @@ import logging
 
 from rx3 import Observable
 
-from queue import SimpleQueue,Empty
+from queue import Queue,Empty
 
 from ..mapper.abstract_mapper import AbstractMapper
 from .abstract_connector import AbstractConnector
@@ -17,7 +17,7 @@ class BitioConnector(AbstractConnector):
     """
     def __init__(self, mapper : AbstractMapper, event_source: Observable):
       super().__init__(event_source)
-      self._queue = SimpleQueue()
+      self._queue = Queue()
       self._mapper = mapper
       radio.config(length=128, channel=12, group=12)
       radio.on()
