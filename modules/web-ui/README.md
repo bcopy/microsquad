@@ -50,7 +50,7 @@ oc process -p NAMESPACE=microsquad -f deployment/service.yml --local=true | oc a
 
 Simply post a base-64 encoded image via mqtt like so :
 ```
-mosquitto_pub -r -t "microsquad/game1/gateway/scoreboard/image" -m "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAJCAYAAAA7KqwyAAAAF0lEQVR42mP8z8BwhoECwDhqwKgBQAAAZaoQLT5kb68AAAAASUVORK5CYII="
+mosquitto_pub -r -t "microsquad/gateway/scoreboard/image" -m "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAJCAYAAAA7KqwyAAAAF0lEQVR42mP8z8BwhoECwDhqwKgBQAAAZaoQLT5kb68AAAAASUVORK5CYII="
 ```
 The website [PNG Pixel](https://png-pixel.com/) is a great help !
 
