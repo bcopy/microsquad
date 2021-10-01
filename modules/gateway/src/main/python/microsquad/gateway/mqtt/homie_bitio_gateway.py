@@ -4,6 +4,8 @@ import logging
 
 from rx3.subject import Subject
 
+from ...game.game_manager import GameManager
+
 from ...mapper.homie.gateway.device_gateway import DeviceGateway
 from ...mapper.homie.homie_mapper import HomieMapper
 from ...connector.bitio_connector import BitioConnector
@@ -26,6 +28,7 @@ class HomieBitioGateway:
         self._gatewayDevice = DeviceGateway(event_source = self._event_source, homie_settings=self._homie_settings,mqtt_settings=self._mqtt_settings)
         self._mapper = HomieMapper(self._gatewayDevice, self._event_source)
         self._connector = BitioConnector(self._mapper, self._event_source)
+        self._game_manager = GameManager(self._event_source, self._gatewayDevice)
 
     def start(self):
         self._gatewayDevice.start()
