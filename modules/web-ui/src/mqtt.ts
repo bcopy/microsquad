@@ -55,7 +55,8 @@ export class MQTTClient {
 export enum MqttMicrosquadEventType {
    PLAYER_UPDATE,
    TEAM_UPDATE,
-   SCOREBOARD_UPDATE
+   SCOREBOARD_UPDATE,
+   GAME_UPDATE
 }
 
 export class MqttUpdateEvent {

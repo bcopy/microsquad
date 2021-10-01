@@ -8,6 +8,8 @@ import envConfig from './config';
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { Player } from "./player";
 import { Scoreboard } from "./scoreboard";
+import 'bootstrap';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 var config = envConfig;
 
@@ -23,7 +25,9 @@ const playerSubject : Subject<MqttUpdateEvent> = new Subject();
 const teamSubject : Subject<MqttUpdateEvent> = new Subject();
 const scoreboardSubject : Subject<MqttUpdateEvent> = new Subject();
 
-var sessionCode = "session-default";
+// var sessionCode = "session-default";
+
+var gameName = "";
 
 var mqttSubscriptionRoot:string;
 
@@ -36,7 +40,8 @@ const loader = new THREE.FileLoader();
 function startMqttSubscriptions(){
     const queryString = window.location.search;
     const urlParams = new URLSearchParams(window.location.search);
-    sessionCode = urlParams.get('sc') ?? "session-default";
+    // sessionCode = urlParams.get('sc') ?? "session-default";
+    gameName = urlParams.get('gn') ?? "";
     const urlClientId = urlParams.get('ci');
     if (urlClientId != null) {
         mqttClientId = "microsquad-web:" + urlClientId; // if specified in the URL, retain the same client ID
@@ -412,30 +417,32 @@ function commandHandler(incomingTopic, value) {
         const PLAYER_NODE_PREFIX = "player-";
         const TEAM_NODE_PREFIX = "team-";
         const SCOREBOARD_NODE_PREFIX = "scoreboard";
+        const GAME_NODE_PREFIX = "game";
 
+        const nodeName = topicParts[1];
         /////////////
         // If the message concerns a player or a team, we store its state for later reference
         // Eventually, we could keep it in a store implementation - for the time being, maps of maps
-        if (topicParts[1].startsWith(PLAYER_NODE_PREFIX) ||
-            topicParts[1].startsWith(TEAM_NODE_PREFIX) ) {
+        if (nodeName.startsWith(PLAYER_NODE_PREFIX) ||
+        nodeName.startsWith(TEAM_NODE_PREFIX) ) {
             let devicePrefix : string;
             let stateMap : Map<string,any>;
             let propertyName : string;
             let eventType : MqttMicrosquadEventType;
             let subject: Subject<MqttUpdateEvent>;
-            if (topicParts[1].startsWith(PLAYER_NODE_PREFIX)) {
+            if (nodeName.startsWith(PLAYER_NODE_PREFIX)) {
                 devicePrefix = PLAYER_NODE_PREFIX;
                 stateMap = playerStates;
                 eventType = MqttMicrosquadEventType.PLAYER_UPDATE;
                 subject = playerSubject;
-            } else if (topicParts[1].startsWith(TEAM_NODE_PREFIX)) {
+            } else if (nodeName.startsWith(TEAM_NODE_PREFIX)) {
                 devicePrefix = TEAM_NODE_PREFIX;
                 stateMap = teamStates;
                 eventType = MqttMicrosquadEventType.TEAM_UPDATE;
                 subject = teamSubject;
             }
             if (devicePrefix != null) {
-                let deviceId = topicParts[1].substring(devicePrefix.length);
+                let deviceId = nodeName.substring(devicePrefix.length);
                 let propertyName = topicParts[2];
                 let state = stateMap.get(deviceId) ?? new Map();
                 state.set(propertyName, value);
@@ -445,6 +452,19 @@ function commandHandler(incomingTopic, value) {
             }
         } else if (topicParts[1].startsWith(SCOREBOARD_NODE_PREFIX)){
             scoreboardSubject.next(new MqttUpdateEvent(MqttMicrosquadEventType.SCOREBOARD_UPDATE, null, topicParts[2], value));
+        } else if (topicParts[1].startsWith(GAME_NODE_PREFIX)){
+            // If the list of transitions available has changed, add buttons allowing to trigger them by modifying "fire-transition"
+            if(topicParts[2] == "transitions"){
+                var controlsDiv = <HTMLDivElement>document.getElementById("transition-controls");
+                controlsDiv.innerHTML="";
+                value.split(",").forEach(transition => {
+                    var transitionButton : HTMLButtonElement = <HTMLButtonElement>document.createElement("button");
+                    transitionButton.setAttribute("data-transition-name", transition)
+                    transitionButton.addEventListener('click', () => { console.log("firing transition "+this.target.getAttribute("data-transition-name")) });
+                    controlsDiv.appendChild(transitionButton);
+                });
+            }
+
         }
 
         //
@@ -458,10 +478,19 @@ function onMqttConnect() {
     if(config.MQTT_TOPIC_ROOT != null){
         mqttTopicRoot = config.MQTT_TOPIC_ROOT
     }
-    mqttSubscriptionRoot = mqttTopicRoot +"/"+sessionCode+"/#";
-    setTimeout(function(){mqttClient.subscribe(mqttSubscriptionRoot)},500);
+    mqttSubscriptionRoot = mqttTopicRoot +"/#";
+    setTimeout(function(){
+        mqttClient.subscribe(mqttSubscriptionRoot);
+        // Update the game name
+        updateGameNameViaMQTT();
+    },500);
     // subButton.disabled = false;
     // pubButton.disabled = false;
+    
+}
+
+function updateGameNameViaMQTT(){
+    mqttClient.publish(mqttTopicRoot + "/gateway/game/name/set", gameName);
 }
 
 function onMqttConnectionLost(response) {

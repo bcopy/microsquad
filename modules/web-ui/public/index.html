@@ -4,8 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
-    <title>Document</title>
+    <title>MicroSquad</title>
     <style>
         #mqtt-interface {
             position: absolute;
@@ -22,20 +21,20 @@
 </head>
 <body>
     <div id="mqtt-interface" class="container-1">
-        <!--div class="flex-box-container-1">
-            <div>
-                Topic: <input id="pub-topic" type="text">
-                Payload: <input id="pub-payload" type="text">
-                <button id="publish-button"class="btn btn-primary" disabled>Publish</button>
-            </div>
-        </div-->
-
+        
         <div class="flex-box-container-1">
             <div>
                 <!--Topic: <input id="sub-topic" type="text">
                 <button id="subscribe-button" class="btn btn-primary" disabled>Subscribe</button-->
                 <button id="add-player" class="btn btn-primary">Add Player</button>
                 <button id="zoom-screen" class="btn btn-primary">Zoom on screen</button>
+            </div>
+            <div id="game-status" style="opacity: 60%;">
+                <!-- We display here the currently active game and its status -->
+            </div>
+            <div id="transition-controls" style="opacity: 60%;">
+                <!-- We add here a button for each available game transition -->
+
             </div>
         </div>
 
