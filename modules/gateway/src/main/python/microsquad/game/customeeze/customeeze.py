@@ -24,6 +24,16 @@ SKINS = [
 
 ATTITUDES = ["Idle","Run","Walk","CrouchWalk"]
 
+import enum
+
+@enum.unique
+class TRANSITIONS(enum.Enum):
+  SELECT_SKIN = "Select skin"
+  SELECT_ATTITUDE = "Select attitude"
+
+
+
+
 logger = logging.getLogger(__name__)
 
 def _set_next_in_collection(property: Property_Base, collection) -> None:
@@ -35,6 +45,14 @@ def _set_next_in_collection(property: Property_Base, collection) -> None:
         idx = 0
     property.value = collection[idx]
 
+def _set_prev_in_collection(property: Property_Base, collection) -> None:
+    idx = 0
+    current_value = property.value
+    if(current_value in collection):
+        idx = collection.index(current_value) -1
+    if(idx < 0) :
+        idx = 0
+    property.value = collection[idx]
 
 class Game(AGame):
     """ 
@@ -45,6 +63,7 @@ class Game(AGame):
         
     def start(self) -> None:
         print("Customeeze starting")
+        super().update_available_transitions([TRANSITIONS.SELECT_SKIN])
 
     def process_event(self, event:MicroSquadEvent) -> None:
         logger.debug("Customeeze received event {} for device {}: {}".format(event.event_type.name, event.device_id, event.payload))
@@ -54,12 +73,29 @@ class Game(AGame):
             if playerNode is None:
                 logger.warn("Player {} is not known".format("player-"+event.device_id))
             else:
-                if event.payload["button"]=="a" :
-                    # Shift the player's skin
-                    _set_next_in_collection(playerNode.get_property("skin"), SKINS)
-                elif event.payload["button"]=="b" :
-                    # Shift the player's skin
-                    _set_next_in_collection(playerNode.get_property("animation"), ATTITUDES)
+                if super().last_fired_transition is None or super().last_fired_transition not in [TRANSITIONS.SELECT_ATTITUDE, TRANSITIONS.SELECT_SKIN]:
+                    playerNode.get_property("animation").value = "Wave"
+                elif super().last_fired_transition == TRANSITIONS.SELECT_SKIN:
+                    if event.payload["button"]=="a" :
+                        # Shift the player's skin
+                        _set_next_in_collection(playerNode.get_property("skin"), SKINS)
+                    elif event.payload["button"]=="b" :
+                        # Shift the player's skin
+                        _set_prev_in_collection(playerNode.get_property("skin"), SKINS)
+                elif super().last_fired_transition == TRANSITIONS.SELECT_ATTITUDE:
+                    if event.payload["button"]=="a" :
+                        # Shift the player's skin
+                        _set_next_in_collection(playerNode.get_property("animation"), ATTITUDES)
+                    elif event.payload["button"]=="b" :
+                        # Shift the player's skin
+                        _set_prev_in_collection(playerNode.get_property("animation"), ATTITUDES)
+                    # _set_prev_in_collection(playerNode.get_property("animation"), ATTITUDES)
+
+    def fire_transition(self, transition) -> None:
+        super().fire_transition(transition)
+
+        
+
 
     def stop(self) -> None:
         print("Customeeze stopped")
