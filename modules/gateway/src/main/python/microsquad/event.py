@@ -25,7 +25,7 @@ class EventType(enum.Enum):
     def equals(self, string):
        return self.value == string
 
-EVENTS_GAME = [EventType.GAME_START,EventType.GAME_STOP, EventType.GAME_TRANSITION]
+EVENTS_GAME = [EventType.GAME_START,EventType.GAME_STOP, EventType.GAME_TRANSITION, EventType.GAME_TRANSITIONS_UPDATED]
 EVENTS_SENSOR = [EventType.BONJOUR,EventType.VOTE,EventType.ACCELERATOR,EventType.BUTTON,EventType.TEMPERATURE]
 EVENTS_TERMINAL = [EventType.TERMINAL_BROADCAST, EventType.TERMINAL_COMMAND]
 
