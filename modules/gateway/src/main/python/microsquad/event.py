@@ -18,12 +18,14 @@ class EventType(enum.Enum):
     GAME_START = "game_start"
     GAME_PAUSE = "game_pause"
     GAME_STOP = "game_stop"
+    GAME_TRANSITION = "game_transition"
+    GAME_TRANSITIONS_UPDATED = "game_transitions_updated"
 
     
     def equals(self, string):
        return self.value == string
 
-EVENTS_GAME = [EventType.GAME_START,EventType.GAME_STOP]
+EVENTS_GAME = [EventType.GAME_START,EventType.GAME_STOP, EventType.GAME_TRANSITION]
 EVENTS_SENSOR = [EventType.BONJOUR,EventType.VOTE,EventType.ACCELERATOR,EventType.BUTTON,EventType.TEMPERATURE]
 EVENTS_TERMINAL = [EventType.TERMINAL_BROADCAST, EventType.TERMINAL_COMMAND]
 

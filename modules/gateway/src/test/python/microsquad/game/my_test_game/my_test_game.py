@@ -18,12 +18,13 @@ class Game(AGame):
         print("Test Game starting")
         self.started = True
         self.running = True
+        self.available_transitions = ["stop","get_events"]
     
     def process_event(self, event:MicroSquadEvent) -> None:
         """
         Handle the next game event
         """
-        if(self.running):
+        if(self.running and self.last_fired_transition == "get_events"):
             self.received_events.append(event)
 
     def stop(self) -> None:

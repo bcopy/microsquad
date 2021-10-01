@@ -56,11 +56,12 @@ class DeviceGateway(Device_Base):
         self._game_node = Node_Base(self,id="game", name="game", type_="game")
         self.add_node(self._game_node)
         
-        # self._game.add_property(Property_String(node = self._game, settable= True, set_value =self.update_script, id="script",name="Script" ))
         self._game_node.add_property(Property_String(node = self._game_node, settable= True, set_value =self.update_game, id="name",name="Name" ))
         self._last_known_game : str = None
 
         self._game_node.add_property(Property_String(node = self._game_node, id="game-status",name="Game Status" ))
+        self._game_node.add_property(Property_String(node = self._game_node, id="transitions",name="Transitions" ))
+        self._game_node.add_property(Property_String(node = self._game_node, settable= True, set_value =self.fire_transition, id="fire-transition",name="The transition fired to further the game's progression" ))
         # self._game.add_property(Property_String(node = self._game, id="audience-code",name="audience-code" ))
         # self._game.add_property(Property_String(node = self._game, id="admin-code",name="admin-code" ))
         self._game_node.add_property(Property_String(node = self._game_node, settable= True, set_value =self.update_broadcast, id="broadcast",name="Broadcast" ))
@@ -88,12 +89,6 @@ class DeviceGateway(Device_Base):
     def game_node(self):
         return self._game_node
 
-    # def update_script(self, new_script):
-    #     """
-    #     A new gaming script has been sent, we need to reset the game session, and execute it.
-    #     """
-    #     pass
-
     def update_game(self, new_game):
         """
         A new game should be started, execute it.
@@ -109,3 +104,9 @@ class DeviceGateway(Device_Base):
         A new broadcast command has been sent, we need to propagate it to all terminals
         """
         self._event_source.on_next(MicroSquadEvent(EventType.TERMINAL_BROADCAST,payload = command))
+
+    def fire_transition(self, transition):
+        """
+        A new transition has been fired, we need to propagate it to the game
+        """
+        self._event_source.on_next(MicroSquadEvent(EventType.GAME_TRANSITION,payload = transition))
