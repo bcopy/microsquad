@@ -50,8 +50,8 @@ class AGame(metaclass=ABCMeta):
     def device_gateway(self):
         return self._device_gateway
 
-    def get_available_transitions(self) -> list:
-        return self._available_transitions
+    def get_available_transitions_as_strings(self) -> list:
+        return [t.value for t in self._available_transitions]
 
     def update_available_transitions(self,transitions:list) -> None:
         # TODO Add transition validation and/or transformation to JSON format

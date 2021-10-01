@@ -22,7 +22,7 @@ SKINS = [
         ,"survivorFemaleA","survivorFemaleB","survivorMaleA","survivorMaleB","zombieA","zombieB","zombieC"
 ]
 
-ATTITUDES = ["Idle","Run","Walk","CrouchWalk"]
+ATTITUDES = ["Idle","Run","Walk","CrouchWalk","Wave"]
 
 import enum
 
@@ -31,8 +31,9 @@ class TRANSITIONS(enum.Enum):
   SELECT_SKIN = "Select skin"
   SELECT_ATTITUDE = "Select attitude"
 
-
-
+TRANSITION_GRAPH = { 
+                TRANSITIONS.SELECT_SKIN : [TRANSITIONS.SELECT_ATTITUDE]
+            }
 
 logger = logging.getLogger(__name__)
 
@@ -73,28 +74,36 @@ class Game(AGame):
             if playerNode is None:
                 logger.warn("Player {} is not known".format("player-"+event.device_id))
             else:
-                if super().last_fired_transition is None or super().last_fired_transition not in [TRANSITIONS.SELECT_ATTITUDE, TRANSITIONS.SELECT_SKIN]:
+                if super().last_fired_transition is None or super().last_fired_transition not in [TRANSITIONS.SELECT_ATTITUDE.value, TRANSITIONS.SELECT_SKIN.value]:
                     playerNode.get_property("animation").value = "Wave"
-                elif super().last_fired_transition == TRANSITIONS.SELECT_SKIN:
+                elif super().last_fired_transition == TRANSITIONS.SELECT_SKIN.value:
                     if event.payload["button"]=="a" :
                         # Shift the player's skin
                         _set_next_in_collection(playerNode.get_property("skin"), SKINS)
                     elif event.payload["button"]=="b" :
                         # Shift the player's skin
                         _set_prev_in_collection(playerNode.get_property("skin"), SKINS)
-                elif super().last_fired_transition == TRANSITIONS.SELECT_ATTITUDE:
+                elif super().last_fired_transition == TRANSITIONS.SELECT_ATTITUDE.value:
                     if event.payload["button"]=="a" :
-                        # Shift the player's skin
+                        # Shift the player's attitude
                         _set_next_in_collection(playerNode.get_property("animation"), ATTITUDES)
                     elif event.payload["button"]=="b" :
-                        # Shift the player's skin
+                        # Shift the player's attitude
                         _set_prev_in_collection(playerNode.get_property("animation"), ATTITUDES)
                     # _set_prev_in_collection(playerNode.get_property("animation"), ATTITUDES)
 
     def fire_transition(self, transition) -> None:
         super().fire_transition(transition)
-
-        
+        # Obtain the next transitions in the graph
+        # If none, the game can be stopped
+        try:
+          next_transitions = TRANSITION_GRAPH[TRANSITIONS(self._last_fired_transition)]
+          if(next_transitions is not None and len(next_transitions) > 0):
+                super().update_available_transitions(next_transitions)
+          else:
+                super().update_available_transitions([])        
+        except KeyError:
+            logger.debug("No next transitions available after "+self._last_fired_transition)
 
 
     def stop(self) -> None:

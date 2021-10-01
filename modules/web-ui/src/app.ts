@@ -458,9 +458,16 @@ function commandHandler(incomingTopic, value) {
                 var controlsDiv = <HTMLDivElement>document.getElementById("transition-controls");
                 controlsDiv.innerHTML="";
                 value.split(",").forEach(transition => {
-                    var transitionButton : HTMLButtonElement = <HTMLButtonElement>document.createElement("button");
-                    transitionButton.setAttribute("data-transition-name", transition)
-                    transitionButton.addEventListener('click', () => { console.log("firing transition "+this.target.getAttribute("data-transition-name")) });
+                    var transitionButton : HTMLAnchorElement = <HTMLAnchorElement>document.createElement("a");
+                    transitionButton.classList.add("btn", "btn-primary", "btn-sm");
+                    transitionButton.setAttribute("role", "button");
+                    transitionButton.innerHTML = transition;
+                    transitionButton.setAttribute("data-transition-name", transition);
+                    transitionButton.addEventListener('click', event => { 
+                               var trns = (event.target as Element).getAttribute("data-transition-name");
+                               console.log("firing transition "+trns);
+                               fireTransitionViaMQTT(trns)
+                        });
                     controlsDiv.appendChild(transitionButton);
                 });
             }
@@ -491,6 +498,10 @@ function onMqttConnect() {
 
 function updateGameNameViaMQTT(){
     mqttClient.publish(mqttTopicRoot + "/gateway/game/name/set", gameName);
+}
+
+function fireTransitionViaMQTT(transition){
+    mqttClient.publish(mqttTopicRoot + "/gateway/game/fire-transition/set", transition);
 }
 
 function onMqttConnectionLost(response) {
