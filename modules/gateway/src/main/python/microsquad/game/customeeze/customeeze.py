@@ -30,9 +30,11 @@ import enum
 class TRANSITIONS(enum.Enum):
   SELECT_SKIN = "Select skin"
   SELECT_ATTITUDE = "Select attitude"
+  EMOJIS = "Emojis"
 
 TRANSITION_GRAPH = { 
-                TRANSITIONS.SELECT_SKIN : [TRANSITIONS.SELECT_ATTITUDE]
+                TRANSITIONS.SELECT_SKIN : [TRANSITIONS.SELECT_ATTITUDE],
+                TRANSITIONS.SELECT_ATTITUDE : [TRANSITIONS.EMOJIS]
             }
 
 logger = logging.getLogger(__name__)
@@ -91,6 +93,14 @@ class Game(AGame):
                         # Shift the player's attitude
                         _set_prev_in_collection(playerNode.get_property("animation"), ATTITUDES)
                     # _set_prev_in_collection(playerNode.get_property("animation"), ATTITUDES)
+                elif super().last_fired_transition == TRANSITIONS.EMOJIS.value:
+                    if event.payload["button"]=="a" :
+                        # Shift the player's attitude
+                        _set_next_in_collection(playerNode.get_property("animation"), ATTITUDES)
+                    elif event.payload["button"]=="b" :
+                        # Shift the player's attitude
+                        _set_prev_in_collection(playerNode.get_property("animation"), ATTITUDES)
+                    # _set_prev_in_collection(playerNode.get_property("animation"), ATTITUDES)
 
     def fire_transition(self, transition) -> None:
         super().fire_transition(transition)
@@ -101,7 +111,10 @@ class Game(AGame):
           if(next_transitions is not None and len(next_transitions) > 0):
                 super().update_available_transitions(next_transitions)
           else:
-                super().update_available_transitions([])        
+                super().update_available_transitions([])  
+
+          if(self._last_fired_transition == TRANSITIONS.EMOJIS):
+              # Trigger a vote
         except KeyError:
             logger.debug("No next transitions available after "+self._last_fired_transition)
 
