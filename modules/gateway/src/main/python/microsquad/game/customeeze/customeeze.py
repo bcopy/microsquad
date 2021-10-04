@@ -54,7 +54,7 @@ def _set_prev_in_collection(property: Property_Base, collection) -> None:
     if(current_value in collection):
         idx = collection.index(current_value) -1
     if(idx < 0) :
-        idx = 0
+        idx = len(collection)-1
     property.value = collection[idx]
 
 class Game(AGame):
@@ -67,6 +67,7 @@ class Game(AGame):
     def start(self) -> None:
         print("Customeeze starting")
         super().update_available_transitions([TRANSITIONS.SELECT_SKIN])
+        super().device_gateway.update_broadcast("buttons")
 
     def process_event(self, event:MicroSquadEvent) -> None:
         logger.debug("Customeeze received event {} for device {}: {}".format(event.event_type.name, event.device_id, event.payload))
@@ -96,10 +97,10 @@ class Game(AGame):
                 elif super().last_fired_transition == TRANSITIONS.EMOJIS.value:
                     if event.payload["button"]=="a" :
                         # Shift the player's attitude
-                        _set_next_in_collection(playerNode.get_property("animation"), ATTITUDES)
+                        _set_next_in_collection(playerNode.get_property("skin"), SKINS)
                     elif event.payload["button"]=="b" :
                         # Shift the player's attitude
-                        _set_prev_in_collection(playerNode.get_property("animation"), ATTITUDES)
+                        _set_prev_in_collection(playerNode.get_property("skin"), SKINS)
                     # _set_prev_in_collection(playerNode.get_property("animation"), ATTITUDES)
 
     def fire_transition(self, transition) -> None:
@@ -114,9 +115,11 @@ class Game(AGame):
                 super().update_available_transitions([])  
 
           if(self._last_fired_transition == TRANSITIONS.EMOJIS):
+              # Switch everybody back to idle
               # Trigger a vote
+              pass
         except KeyError:
-            logger.debug("No next transitions available after "+self._last_fired_transition)
+          logger.debug("No next transitions available after "+self._last_fired_transition)
 
 
     def stop(self) -> None:
