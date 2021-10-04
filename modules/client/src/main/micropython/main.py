@@ -1,4 +1,4 @@
-from microbit import display,Image,sleep, button_a, button_b, accelerometer, running_time
+from microbit import display,Image,sleep, button_a, button_b, running_time
 
 import radio 
 
@@ -75,9 +75,9 @@ def usquad_image(tags, timestamp=None):
 #   _clear = (tags.get('clear', "true").lower()=="true")
 #   display.show(text_str, delay=_delay, wait=_wait, clear=_clear)
 
-def usquad_read_accel(tags= None, timestamp=None):
-  x,y,z = accelerometer.get_values()
-  usquad_send("read_accel", tags = {"x":x,"y":y,"z":z})
+# def usquad_read_accel(tags= None, timestamp=None):
+#   x,y,z = accelerometer.get_values()
+#   usquad_send("read_accel", tags = {"x":x,"y":y,"z":z})
 
 # def usquad_device_id(tags, timestamp=None):
 #   global DEVID
@@ -107,12 +107,12 @@ def usquad_vote(tags, timestamp=None):
         display.show(str(votes_left), clear=False, wait=True)
         sleep(1500)
         display.show(choices[choice], clear=False,wait=False)
-  display.show(Image.TARGET)
+  display.show(Image.HEART)
 
 def usquad_buttons(tags = None, timestamp=None):
   global incoming
-  # button_a.was_pressed()
-  # button_b.was_pressed()
+  button_a.was_pressed()
+  button_b.was_pressed()
   display.show(Image.TRIANGLE)
   stop = False
   while not stop:
@@ -123,21 +123,22 @@ def usquad_buttons(tags = None, timestamp=None):
       usquad_send("read_button",{"button":"b"})
       display.show("b")
     poll_messages()
-    if incoming is not None:
+    if incoming is not None and (ulp_parse(incoming)[0] in METHOD_LIST):
       stop = True
     else:
-      sleep(200)
+      sleep(250)
       display.show(Image.SQUARE_SMALL)
       
   
-usquad_methods = {
+METHOD_MAP = {
   'image'     : usquad_image,
-  'accel'     : usquad_read_accel,
+  # 'accel'     : usquad_read_accel,
   # 'text'      : usquad_text,
   'vote'      : usquad_vote,
   # 'device_id' : usquad_device_id,
   'buttons'   : usquad_buttons
 }
+METHOD_LIST = METHOD_MAP.keys()
 incoming = None
   
 
@@ -148,7 +149,7 @@ def poll_messages():
   # if button_a.was_pressed():
     # incoming = 'vote,value="99999:99999:99099:99999:99999;99999:55555:00000:55555:99999",duration=4000,votes=4'
   
-display.show(Image.TARGET)
+display.show(Image.HEART)
 usquad_send("bonjour")
 
 while True:
@@ -164,10 +165,9 @@ while True:
     execute = True
     if("dev_id" in tags.keys() and tags["dev_id"] != DEVID):
       execute = False
-    method = usquad_methods.get(meas, None)
+    method = METHOD_MAP.get(meas, None)
     if method is None:
       execute = False
     if execute:
       method(tags,stamp)
-
-  sleep(100)
+  sleep(300)
