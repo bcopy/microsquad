@@ -15,7 +15,7 @@ class AbstractConnector(metaclass=ABCMeta):
     """
 
     @abstractmethod
-    def queue(self, message):
+    def queue(self, message, device_id = None):
         """
         Queue a message for radio distribution
         """
@@ -29,9 +29,9 @@ class AbstractConnector(metaclass=ABCMeta):
         self._thread_terminate = True
         self._event_source = event_source
         self._event_source.pipe(
-            filter(lambda e: e.event_type == EventType.TERMINAL_BROADCAST)
+            filter(lambda e: e.event_type in [EventType.TERMINAL_BROADCAST, EventType.TERMINAL_COMMAND] )
         ).subscribe(
-            on_next = lambda evt: self.queue(evt.payload)
+            on_next = lambda evt: self.queue(evt.payload, evt.device_id)
         )
         
     def start(self):

@@ -16,9 +16,14 @@ class DummyConnector(AbstractConnector):
       self._incoming_queue = SimpleQueue()
       self._mapper = mapper
       self.__last_sent = None
+      self.__last_sent_device = None
       
-    def queue(self, message):
-      print("'Sending' Message to Microbits ;-) : "+message)
+    def queue(self, message, device_id = None):
+      if device_id is None:
+        print("'Sending' Message to Microbits ;-) : {}".format(message))
+      else:
+        print("'Sending' Message to Microbit Device {} ;-) : {}".format(str(device_id), message))  
+        self.__last_sent_device = str(device_id)
       self.__last_sent = message
     
     def simulate_message(self,msg : str):
