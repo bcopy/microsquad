@@ -11,7 +11,7 @@ except ImportError:
   SIMU = True
   print("Could not import machine module, DEVICE ID : "+str(DEVID))
 
-radio.config(channel=12, group=12, length=128)
+radio.config(channel=12, group=12, length=200)
 radio.on()
 
 IMG_SEND = [(Image.ARROW_N * (i/5)) for i in range(5, -1, -1)]
@@ -92,8 +92,9 @@ def usquad_vote(tags, timestamp=None):
   choice = 0
   button_a.get_presses()
   button_b.was_pressed()
+  stop = False
   display.show(choices[choice], delay=50, clear=False,wait=True)
-  while (vote_cn < _max_votes):
+  while (not stop) and (vote_cn < _max_votes):
     a_presses = button_a.get_presses()
     if a_presses > 0:
       choice = (choice + a_presses) % choices_max
@@ -107,6 +108,9 @@ def usquad_vote(tags, timestamp=None):
         display.show(str(votes_left), clear=False, wait=True)
         sleep(1500)
         display.show(choices[choice], clear=False,wait=False)
+    poll_messages()
+    if incoming is not None and (ulp_parse(incoming)[0] in METHOD_LIST):
+      stop = True
   display.show(Image.HEART)
 
 def usquad_buttons(tags = None, timestamp=None):
@@ -170,4 +174,4 @@ while True:
       execute = False
     if execute:
       method(tags,stamp)
-  sleep(300)
+  sleep(100)
