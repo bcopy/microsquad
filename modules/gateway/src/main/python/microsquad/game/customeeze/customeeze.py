@@ -113,13 +113,14 @@ class Game(AGame):
                 super().update_available_transitions(next_transitions)
           else:
                 super().update_available_transitions([])  
-
-          if(self._last_fired_transition == TRANSITIONS.EMOJIS):
-              # Switch everybody back to idle
-              # Trigger a vote
-              pass
         except KeyError:
           logger.debug("No next transitions available after "+self._last_fired_transition)
+
+        if(TRANSITIONS(self._last_fired_transition) == TRANSITIONS.EMOJIS):
+              # Switch everybody back to idle
+              # Trigger a vote
+              super().device_gateway.update_broadcast("vote,value=90009:09090:00000:99999:90909;09990:99399:99999:99990:99000;90900:90900:99990:99399:99999;09900:99390:99999:00099:99990,duration=4000,votes=4")
+              pass
 
 
     def stop(self) -> None:
