@@ -5,7 +5,7 @@ from microsquad.mapper.homie.gateway.device_gateway import DeviceGateway
 
 import logging
 
-from ..abstract_game import AGame
+from ..abstract_game import AGame, set_next_in_collection, set_prev_in_collection
 
 SKINS = [
         "alienA","alienB","animalA","animalB","animalBaseA","animalBaseB","animalBaseC","animalBaseD","animalBaseE","animalBaseF"
@@ -34,28 +34,11 @@ class TRANSITIONS(enum.Enum):
 
 TRANSITION_GRAPH = { 
                 TRANSITIONS.SELECT_SKIN : [TRANSITIONS.SELECT_ATTITUDE],
-                TRANSITIONS.SELECT_ATTITUDE : [TRANSITIONS.EMOJIS]
+                TRANSITIONS.SELECT_ATTITUDE : [TRANSITIONS.EMOJIS],
+                TRANSITIONS.EMOJIS : [TRANSITIONS.EMOJIS]
             }
 
 logger = logging.getLogger(__name__)
-
-def _set_next_in_collection(property: Property_Base, collection) -> None:
-    idx = 0
-    current_value = property.value
-    if(current_value in collection):
-        idx = collection.index(current_value) +1
-    if(idx >= len(collection)) :
-        idx = 0
-    property.value = collection[idx]
-
-def _set_prev_in_collection(property: Property_Base, collection) -> None:
-    idx = 0
-    current_value = property.value
-    if(current_value in collection):
-        idx = collection.index(current_value) -1
-    if(idx < 0) :
-        idx = len(collection)-1
-    property.value = collection[idx]
 
 class Game(AGame):
     """ 
@@ -82,40 +65,41 @@ class Game(AGame):
                 elif super().last_fired_transition == TRANSITIONS.SELECT_SKIN.value:
                     if event.payload["button"]=="a" :
                         # Shift the player's skin
-                        _set_next_in_collection(playerNode.get_property("skin"), SKINS)
+                        set_next_in_collection(playerNode.get_property("skin"), SKINS)
                     elif event.payload["button"]=="b" :
                         # Shift the player's skin
-                        _set_prev_in_collection(playerNode.get_property("skin"), SKINS)
+                        set_prev_in_collection(playerNode.get_property("skin"), SKINS)
                 elif super().last_fired_transition == TRANSITIONS.SELECT_ATTITUDE.value:
                     if event.payload["button"]=="a" :
-                        # Shift the player's attitude
-                        _set_next_in_collection(playerNode.get_property("animation"), ATTITUDES)
+                        set_next_in_collection(playerNode.get_property("animation"), ATTITUDES)
                     elif event.payload["button"]=="b" :
-                        # Shift the player's attitude
-                        _set_prev_in_collection(playerNode.get_property("animation"), ATTITUDES)
-                    # _set_prev_in_collection(playerNode.get_property("animation"), ATTITUDES)
+                        set_prev_in_collection(playerNode.get_property("animation"), ATTITUDES)
+                    
                 elif super().last_fired_transition == TRANSITIONS.EMOJIS.value:
                     if event.payload["button"]=="a" :
                         # Shift the player's attitude
-                        _set_next_in_collection(playerNode.get_property("skin"), SKINS)
+                        set_next_in_collection(playerNode.get_property("skin"), SKINS)
                     elif event.payload["button"]=="b" :
                         # Shift the player's attitude
-                        _set_prev_in_collection(playerNode.get_property("skin"), SKINS)
-                    # _set_prev_in_collection(playerNode.get_property("animation"), ATTITUDES)
+                        set_prev_in_collection(playerNode.get_property("skin"), SKINS)
+                    
 
     def fire_transition(self, transition) -> None:
         super().fire_transition(transition)
         # Obtain the next transitions in the graph
         # If none, the game can be stopped
+        next_transitions = None
         try:
           next_transitions = TRANSITION_GRAPH[TRANSITIONS(self._last_fired_transition)]
-          if(next_transitions is not None and len(next_transitions) > 0):
-                super().update_available_transitions(next_transitions)
-          else:
-                super().update_available_transitions([])  
+          
         except KeyError:
           logger.debug("No next transitions available after "+self._last_fired_transition)
-
+        
+        if(next_transitions is not None and len(next_transitions) > 0):
+                super().update_available_transitions(next_transitions)
+        else:
+                super().update_available_transitions([])  
+        
         if(TRANSITIONS(self._last_fired_transition) == TRANSITIONS.EMOJIS):
               # Switch everybody back to idle
               # Trigger a vote

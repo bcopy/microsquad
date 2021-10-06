@@ -2,6 +2,8 @@ from abc import ABCMeta,abstractmethod
 
 import logging
 import threading
+
+from homie.node.property.property_base import Property_Base
 from microsquad.event import EventType, MicroSquadEvent
 
 from ..mapper.homie.gateway.device_gateway import DeviceGateway
@@ -57,3 +59,21 @@ class AGame(metaclass=ABCMeta):
         # TODO Add transition validation and/or transformation to JSON format
         self._available_transitions = transitions
         self.event_source.on_next(MicroSquadEvent(EventType.GAME_TRANSITIONS_UPDATED,payload=[t.value for t in self._available_transitions]))
+
+def set_next_in_collection(property: Property_Base, collection) -> None:
+    idx = 0
+    current_value = property.value
+    if(current_value in collection):
+        idx = collection.index(current_value) +1
+    if(idx >= len(collection)) :
+        idx = 0
+    property.value = collection[idx]
+
+def set_prev_in_collection(property: Property_Base, collection) -> None:
+    idx = 0
+    current_value = property.value
+    if(current_value in collection):
+        idx = collection.index(current_value) -1
+    if(idx < 0) :
+        idx = len(collection)-1
+    property.value = collection[idx]
