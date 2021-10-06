@@ -507,18 +507,5 @@ function fireTransitionViaMQTT(transition){
 function onMqttConnectionLost(response) {
     if (response.errorCode !== 0) {
         console.error("Connection lost: " + response.errorMessage);
-        // subButton.disabled = true;
-        // pubButton.disabled = true;
     }
 }
-
-// function _btnPublish() {
-//     let topic = (<HTMLInputElement>document.getElementById("pub-topic")).value;
-//     let payload = (<HTMLInputElement>document.getElementById("pub-payload")).value;
-//     mqttClient.publish(topic, payload);
-// }
-
-// function _btnSubscribe() {
-//     let topic = (<HTMLInputElement>document.getElementById("sub-topic")).value;
-//     mqttClient.subscribe(topic);
-// }
