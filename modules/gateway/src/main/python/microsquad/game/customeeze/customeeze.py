@@ -88,12 +88,7 @@ class Game(AGame):
         super().fire_transition(transition)
         # Obtain the next transitions in the graph
         # If none, the game can be stopped
-        next_transitions = None
-        try:
-          next_transitions = TRANSITION_GRAPH[TRANSITIONS(self._last_fired_transition)]
-          
-        except KeyError:
-          logger.debug("No next transitions available after "+self._last_fired_transition)
+        next_transitions = TRANSITION_GRAPH.get(TRANSITIONS(self._last_fired_transition), None)
         
         if(next_transitions is not None and len(next_transitions) > 0):
                 super().update_available_transitions(next_transitions)
