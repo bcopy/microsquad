@@ -84,15 +84,15 @@ class Game(AGame):
         if(TRANSITIONS(self._last_fired_transition) == TRANSITIONS.SEND_ELECTRON):
             # TODO : Add images and sounds on the scoreboard
             logger.debug("Sending an electron")
-            super().device_gateway.update_broadcast("image,value="+PARTICLE.ELECTRON.trajectory+",delay=1000,clear=false")
+            super().device_gateway.update_broadcast("image,value="+PARTICLE.ELECTRON.trajectory)
         elif(TRANSITIONS(self._last_fired_transition) == TRANSITIONS.SEND_PROTON):
             # TODO : Add images and sounds on the scoreboard
             logger.debug("Sending a proton")
-            super().device_gateway.update_broadcast("image,value="+PARTICLE.PROTON.trajectory+",delay=1000,clear=false")
+            super().device_gateway.update_broadcast("image,value="+PARTICLE.PROTON.trajectory)
         elif(TRANSITIONS(self._last_fired_transition) == TRANSITIONS.SEND_MYSTERY):
             self._last_sent_particle = random.choice(PARTICLES)
             logger.debug("Sending ".format(self._last_sent_particle.identifier))
-            super().device_gateway.update_broadcast("image,value="+self._last_sent_particle.trajectory+",delay=1000,clear=false")
+            super().device_gateway.update_broadcast("image,value="+self._last_sent_particle.trajectory)
         elif(TRANSITIONS(self._last_fired_transition) == TRANSITIONS.VOTE):
             # vote_str = "vote,value="+(";".join([p.display for p in PARTICLES]))+",duration=4000"
             vote_str = "vote_particles"
