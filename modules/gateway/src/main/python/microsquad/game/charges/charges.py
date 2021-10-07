@@ -16,18 +16,18 @@ class TRANSITIONS(enum.Enum):
   START = "Start"
   SEND_ELECTRON = "Send an electron"
   SEND_PROTON = "Send a proton"
-  SEND_MYSTERY = "Send a surprise"
+  SEND_MYSTERY = "Send mystery particle"
   RESEND = "Resend"
   VOTE = "Vote"
   RESULTS = "Show results"
 
 TRANSITION_GRAPH = { 
-                TRANSITIONS.START : [TRANSITIONS.SEND_ELECTRON, TRANSITIONS.SEND_PROTON],
                 TRANSITIONS.SEND_ELECTRON : [TRANSITIONS.SEND_ELECTRON, TRANSITIONS.SEND_PROTON, TRANSITIONS.SEND_MYSTERY],
                 TRANSITIONS.SEND_PROTON :  [TRANSITIONS.SEND_ELECTRON, TRANSITIONS.SEND_PROTON, TRANSITIONS.SEND_MYSTERY],
                 TRANSITIONS.SEND_MYSTERY : [TRANSITIONS.RESEND,TRANSITIONS.VOTE],
                 TRANSITIONS.RESEND : [TRANSITIONS.RESEND,TRANSITIONS.VOTE],
-                TRANSITIONS.VOTE : [TRANSITIONS.RESULTS]
+                TRANSITIONS.VOTE : [TRANSITIONS.RESULTS],
+                TRANSITIONS.RESULTS : [TRANSITIONS.SEND_MYSTERY]
             }
 
 logger = logging.getLogger(__name__)
@@ -43,7 +43,7 @@ class Game(AGame):
         
     def start(self) -> None:
         print("Charges game starting")
-        super().update_available_transitions([TRANSITIONS.START])
+        super().update_available_transitions([TRANSITIONS.SEND_ELECTRON, TRANSITIONS.SEND_PROTON])
         super().device_gateway.update_broadcast("image,value=30003:30003:30003:30003:30003")
 
     def process_event(self, event:MicroSquadEvent) -> None:
