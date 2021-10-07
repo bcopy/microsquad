@@ -5,7 +5,7 @@ import radio
 SIMU = False
 import machine
 
-DEVID = const(str(int.from_bytes(machine.unique_id(), "big")))
+DEVID = const("{:x}".format(int.from_bytes(machine.unique_id(), "big")))
 
 radio.config(channel=12, group=12, length=128)
 radio.on()
@@ -23,6 +23,17 @@ def _pop_or_none(arr):
       return arr.pop(0)
     else:
       return None
+
+# def _tokenize(s, c):
+#      i = 0
+#      while True:
+#          try:
+#              j = s.index(c, i)
+#          except ValueError:
+#              yield s[i:]
+#              return
+#          yield s[i:j]
+#          i = j + 1
 
 def ulp_parse(msg):
     meas = None
@@ -49,10 +60,6 @@ def ulp_serialize(measurement, tags=None, timestamp=None):
     if tags is not None:
       for key, value in tags.items():
         result += ','+str(key)+"=\""+str(value)+"\""
-    # if timestamp is not None:
-    #   result += " "+str(timestamp)
-    # else:
-    #   result += " "+str(running_time())
     return result
 
 def usquad_send(measurement, tags= {}, timestamp=None):
