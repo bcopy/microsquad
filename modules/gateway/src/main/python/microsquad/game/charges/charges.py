@@ -52,7 +52,7 @@ class Game(AGame):
     def start(self) -> None:
         print("Charges game starting")
         super().update_available_transitions([TRANSITIONS.START])
-        super().device_gateway.update_broadcast("image,value=30003:30003:30003:30003:30003,delay=2000,clear=false")
+        super().device_gateway.update_broadcast("image,value=30003:30003:30003:30003:30003")
 
     def process_event(self, event:MicroSquadEvent) -> None:
         logger.debug("Charges received event {} for device {}: {}".format(event.event_type.name, event.device_id, event.payload))
@@ -73,11 +73,8 @@ class Game(AGame):
         super().fire_transition(transition)
         # Obtain the next transitions in the graph
         # If none, the game can be stopped
-        next_transitions = None
-        try:
-          next_transitions = TRANSITION_GRAPH[TRANSITIONS(self._last_fired_transition)]
-        except KeyError:
-          logger.debug("No next transitions available after "+self._last_fired_transition)
+        next_transitions = TRANSITION_GRAPH.get(TRANSITIONS(self._last_fired_transition), None)
+        
         
         if(next_transitions is not None and len(next_transitions) > 0):
                 super().update_available_transitions(next_transitions)
