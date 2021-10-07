@@ -43,6 +43,7 @@ class DeviceGateway(Device_Base):
         self.add_node(self._scoreboard)
         self._scoreboard.add_property(Property_String(node = self._scoreboard, id="score",name="Score" ))
         self._scoreboard.add_property(Property_String(node = self._scoreboard, id="image",name="Image" ))
+        self._scoreboard.add_property(Property_String(node = self._scoreboard, id="sound", name="Sound", retained=False ))
         self._scoreboard.add_property(Property_String(node = self._scoreboard, id="show",name="Show" ))
 
         self._player_manager = NodePlayerManager(self)
