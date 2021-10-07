@@ -75,12 +75,13 @@ class Game(AGame):
                         set_prev_in_collection(playerNode.get_property("animation"), ATTITUDES)
                     
                 elif super().last_fired_transition == TRANSITIONS.EMOJIS.value:
-                    if event.payload["button"]=="a" :
-                        # Shift the player's attitude
-                        set_next_in_collection(playerNode.get_property("skin"), SKINS)
-                    elif event.payload["button"]=="b" :
-                        # Shift the player's attitude
-                        set_prev_in_collection(playerNode.get_property("skin"), SKINS)
+                    # if event.payload["button"]=="a" :
+                    #     # Shift the player's attitude
+                    #     set_next_in_collection(playerNode.get_property("skin"), SKINS)
+                    # elif event.payload["button"]=="b" :
+                    #     # Shift the player's attitude
+                    #     set_prev_in_collection(playerNode.get_property("skin"), SKINS)
+                    pass
                     
 
     def fire_transition(self, transition) -> None:
@@ -102,8 +103,8 @@ class Game(AGame):
         if(TRANSITIONS(self._last_fired_transition) == TRANSITIONS.EMOJIS):
               # Switch everybody back to idle
               # Trigger a vote
-              super().device_gateway.update_broadcast("vote,value=90009:09090:00000:99999:90909;09990:99399:99999:99990:99000;90900:90900:99990:99399:99999;09900:99390:99999:00099:99990,duration=4000,votes=4")
-              pass
+            #   super().device_gateway.update_broadcast("vote,value=90009:09090:00000:99999:90909;09990:99399:99999:99990:99000;90900:90900:99990:99399:99999;09900:99390:99999:00099:99990,duration=4000,votes=4")
+            super().device_gateway.update_broadcast("vote_particles") 
 
 
     def stop(self) -> None:
