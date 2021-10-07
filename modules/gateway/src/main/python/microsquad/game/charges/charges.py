@@ -52,7 +52,7 @@ class Game(AGame):
     def start(self) -> None:
         print("Charges game starting")
         super().update_available_transitions([TRANSITIONS.START])
-        super().device_gateway.update_broadcast("image,value=30003:30003:30003:30003:30003,delay=5000,sleep=5000,clear=false")
+        super().device_gateway.update_broadcast("image,value=30003:30003:30003:30003:30003,delay=2000,clear=false")
 
     def process_event(self, event:MicroSquadEvent) -> None:
         logger.debug("Charges received event {} for device {}: {}".format(event.event_type.name, event.device_id, event.payload))
@@ -97,7 +97,8 @@ class Game(AGame):
             logger.debug("Sending ".format(self._last_sent_particle.identifier))
             super().device_gateway.update_broadcast("image,value="+self._last_sent_particle.trajectory+",delay=1000,clear=false")
         elif(TRANSITIONS(self._last_fired_transition) == TRANSITIONS.VOTE):
-            vote_str = "vote,value="+(";".join([p.display for p in PARTICLES]))+",duration=4000"
+            # vote_str = "vote,value="+(";".join([p.display for p in PARTICLES]))+",duration=4000"
+            vote_str = "vote_particles"
             logger.debug("Sending {}".format(vote_str))
             super().device_gateway.update_broadcast(vote_str)
         elif(TRANSITIONS(self._last_fired_transition) == TRANSITIONS.RESULTS):
