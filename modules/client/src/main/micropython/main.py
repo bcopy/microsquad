@@ -3,13 +3,9 @@ from micropython import const
 import radio 
 
 SIMU = False
-try:
-  import machine
-  DEVID = str(int.from_bytes(machine.unique_id(), "big"))
-except ImportError:
-  DEVID = "JOGE"
-  SIMU = True
-  print("Could not import machine module, DEVICE ID : "+str(DEVID))
+import machine
+
+DEVID = const(str(int.from_bytes(machine.unique_id(), "big")))
 
 radio.config(channel=12, group=12, length=128)
 radio.on()
@@ -17,11 +13,12 @@ radio.on()
 # IMG_SEND = const([(Image.ARROW_N * (i/2)) for i in range(2, -1, -1)])
 IMG_SEND = Image.ARROW_N
 
-PROTON_DISPLAY = const("09990:99399:99999:99990:99000")
-
+PROTON_DISPLAY =   const("09990:99399:99999:99990:99000")
 ELECTRON_DISPLAY = const("90009:09090:00000:99999:90909")
+PHOTON_DISPLAY =   const("90900:90900:99990:99399:99999")
+NEUTRON_DISPLAY =  const("09900:99390:99999:00099:99990")
 
-def _pop_head_or_none(arr):
+def _pop_or_none(arr):
     if arr and len(arr)>0:
       return arr.pop(0)
     else:
@@ -33,7 +30,7 @@ def ulp_parse(msg):
     tmstp = None
 
     frags = msg.split(" ")
-    frag = _pop_head_or_none(frags)
+    frag = _pop_or_none(frags)
     if frag is not None:
         measFrags = frag.split(",")
         if len(measFrags) > 0:
@@ -42,7 +39,7 @@ def ulp_parse(msg):
             for tagFrag in measFrags[1:]:
                 tagKV = tagFrag.split("=")
                 tags[tagKV[0]] = tagKV[1].strip('"\'')
-    frag = _pop_head_or_none(frags)
+    frag = _pop_or_none(frags)
     if frag is not None:
         tmstp = int(frag)
     return (meas, tags, tmstp)
@@ -52,32 +49,30 @@ def ulp_serialize(measurement, tags=None, timestamp=None):
     if tags is not None:
       for key, value in tags.items():
         result += ','+str(key)+"=\""+str(value)+"\""
-    if timestamp is not None:
-      result += " "+str(timestamp)
-    else:
-      result += " "+str(running_time())
+    # if timestamp is not None:
+    #   result += " "+str(timestamp)
+    # else:
+    #   result += " "+str(running_time())
     return result
 
 def usquad_send(measurement, tags= {}, timestamp=None):
   tags["dev_id"] = DEVID
   msg = ulp_serialize(measurement, tags, timestamp)
   radio.send(msg)
-  if SIMU == True:
-    print("Sending : "+msg)
   
 def usquad_image(tags, timestamp=None):
   images_str = tags['value']
   img = [(Image(img_str)) for img_str in images_str.split(";")]
-  _delay = int(tags.get('delay',50))
-  _sleep = int(tags.get('sleep',2000))
+  _del = int(tags.get('delay',1000))
+  _slp = int(tags.get('sleep',2000))
   _wait = (tags.get('wait', "true").lower()=="true")
-  _clear = (tags.get('clear', "true").lower()=="true")
-  display.show(img, delay=_delay, wait=_wait, clear=_clear)
-  sleep(_sleep)
+  _clr = (tags.get('clear', "false").lower()=="true")
+  display.show(img, delay=_del, wait=_wait, clear=_clr)
+  sleep(_slp)
 
 def usquad_vote_particles(tags, timestamp = None):
   usquad_vote({
-    "value" : (PROTON_DISPLAY+";"+ELECTRON_DISPLAY),
+    "value" : (PROTON_DISPLAY+";"+ELECTRON_DISPLAY+";"+PHOTON_DISPLAY+";"+NEUTRON_DISPLAY),
     "votes" : "1"
   })
 
@@ -110,7 +105,7 @@ def usquad_vote(tags, timestamp=None):
         display.show(choices[choice], clear=False,wait=False)
     poll_messages()
     if incoming is not None and (not(incoming.startswith("read_") or incoming.startswith("bonjour"))) and (ulp_parse(incoming)[0] in METHOD_LIST):
-      stopVote = True # We keep incoming as it must be processed by the main loop now
+      stopVote = True # keep incoming
   display.show(Image.YES)
 
 def usquad_buttons(tags = None, timestamp=None):
@@ -128,7 +123,7 @@ def usquad_buttons(tags = None, timestamp=None):
       display.show("b")
     poll_messages()
     if incoming is not None and (not(incoming.startswith("read_") or incoming == "bonjour")) and (ulp_parse(incoming)[0] in METHOD_LIST):
-      stopBtn = True # We keep incoming as it must be processed by the main loop now
+      stopBtn = True # keep incoming
     else:
       sleep(250)
       display.show(Image.SQUARE_SMALL)
@@ -145,8 +140,7 @@ incoming = None
 
 def poll_messages():
   global incoming
-  if SIMU == False:
-    incoming = radio.receive()
+  incoming = radio.receive()
   
 
 # START AND MAIN LOOP
