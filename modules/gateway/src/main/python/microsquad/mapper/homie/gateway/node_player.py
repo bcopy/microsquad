@@ -32,7 +32,7 @@ class NodePlayer(Node_Base):
       self.add_property(Property_String(self,   id="say",                name="say"))
       self.add_property(Property_DateTime(self, id="say-start",          name="say start"))
       self.add_property(Property_Integer(self,  id="say-duration",       name="say duration", settable=False))
-      self.add_property(Property_String(self,   id="animation",          name="animation"))
+      self.add_property(Property_String(self,   id="animation",          name="animation", retained=False))
       self.add_property(Property_DateTime(self, id="animation-start",    name="animation start"))
       self.add_property(Property_Integer(self,  id="animation-duration", name="animation duration", settable=False))
       self.add_property(Property_String(self,   id="accessory",          name="accessory"))
