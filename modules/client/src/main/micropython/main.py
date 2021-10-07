@@ -1,5 +1,5 @@
 from microbit import display,Image,sleep, button_a, button_b, running_time
-
+from micropython import const
 import radio 
 
 SIMU = False
@@ -14,7 +14,7 @@ except ImportError:
 radio.config(channel=12, group=12, length=200)
 radio.on()
 
-IMG_SEND = [(Image.ARROW_N * (i/5)) for i in range(5, -1, -1)]
+IMG_SEND = const([(Image.ARROW_N * (i/3)) for i in range(3, -1, -1)])
 
 def _pop_head_or_none(arr):
     if arr and len(arr)>0:
@@ -64,24 +64,12 @@ def usquad_image(tags, timestamp=None):
   images_str = tags['value']
   img = [(Image(img_str)) for img_str in images_str.split(";")]
   _delay = int(tags.get('delay',50))
+  _sleep = int(tags.get('sleep',2000))
   _wait = (tags.get('wait', "true").lower()=="true")
   _clear = (tags.get('clear', "true").lower()=="true")
   display.show(img, delay=_delay, wait=_wait, clear=_clear)
+  sleep(_sleep)
 
-# def usquad_text(tags, timestamp=None):
-#   text_str = tags['value'].replace("_", " ")
-#   _delay = int(tags.get('delay',50))
-#   _wait = (tags.get('wait', "true").lower()=="true")
-#   _clear = (tags.get('clear', "true").lower()=="true")
-#   display.show(text_str, delay=_delay, wait=_wait, clear=_clear)
-
-# def usquad_read_accel(tags= None, timestamp=None):
-#   x,y,z = accelerometer.get_values()
-#   usquad_send("read_accel", tags = {"x":x,"y":y,"z":z})
-
-# def usquad_device_id(tags, timestamp=None):
-#   global DEVID
-#   DEVID = tags.get('id',machine.unique_id())
 
 def usquad_vote(tags, timestamp=None):
   images_str = tags['value']
@@ -134,15 +122,12 @@ def usquad_buttons(tags = None, timestamp=None):
       display.show(Image.SQUARE_SMALL)
       
   
-METHOD_MAP = {
+METHOD_MAP = const({
   'image'     : usquad_image,
-  # 'accel'     : usquad_read_accel,
-  # 'text'      : usquad_text,
   'vote'      : usquad_vote,
-  # 'device_id' : usquad_device_id,
   'buttons'   : usquad_buttons
-}
-METHOD_LIST = METHOD_MAP.keys()
+})
+METHOD_LIST = const(METHOD_MAP.keys())
 incoming = None
   
 
@@ -150,8 +135,6 @@ def poll_messages():
   global incoming
   if SIMU == False:
     incoming = radio.receive()
-  # if button_a.was_pressed():
-    # incoming = 'vote,value="99999:99999:99099:99999:99999;99999:55555:00000:55555:99999",duration=4000,votes=4'
   
 display.show(Image.HEART)
 usquad_send("bonjour")
