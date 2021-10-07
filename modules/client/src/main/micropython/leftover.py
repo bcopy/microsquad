@@ -35,6 +35,16 @@
 #   global DEVID
 #   DEVID = tags.get('id',machine.unique_id())
 
+# def usquad_image(tags, timestamp=None):
+#   images_str = tags['value']
+#   img = [(Image(img_str)) for img_str in images_str.split(";")]
+#   _del = int(tags.get('delay',1000))
+#   _slp = int(tags.get('sleep',2000))
+#   _wait = (tags.get('wait', "true").lower()=="true")
+#   _clr = (tags.get('clear', "false").lower()=="true")
+#   display.show(img, delay=_del, wait=_wait, clear=_clr)
+#   sleep(_slp)
+
 
       #incoming = 'image,value="99999:99999:99099:99999:99999;99999:55555:55055:55555:99999",delay=500,clear=false,wait=true'
       #incoming = 'text,value="Show_me_the_money",clear=true,wait=true'
