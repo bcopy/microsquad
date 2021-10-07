@@ -11,10 +11,15 @@ except ImportError:
   SIMU = True
   print("Could not import machine module, DEVICE ID : "+str(DEVID))
 
-radio.config(channel=12, group=12, length=200)
+radio.config(channel=12, group=12, length=128)
 radio.on()
 
-IMG_SEND = const([(Image.ARROW_N * (i/3)) for i in range(3, -1, -1)])
+# IMG_SEND = const([(Image.ARROW_N * (i/2)) for i in range(2, -1, -1)])
+IMG_SEND = Image.ARROW_N
+
+PROTON_DISPLAY = const("09990:99399:99999:99990:99000")
+
+ELECTRON_DISPLAY = const("90009:09090:00000:99999:90909")
 
 def _pop_head_or_none(arr):
     if arr and len(arr)>0:
@@ -70,8 +75,14 @@ def usquad_image(tags, timestamp=None):
   display.show(img, delay=_delay, wait=_wait, clear=_clear)
   sleep(_sleep)
 
+def usquad_vote_particles(tags, timestamp = None):
+  usquad_vote({
+    "value" : (PROTON_DISPLAY+";"+ELECTRON_DISPLAY),
+    "votes" : "1"
+  })
 
 def usquad_vote(tags, timestamp=None):
+  global incoming,METHOD_LIST
   images_str = tags['value']
   choices =  [(Image(img_str)) for img_str in images_str.split(";")]
   _max_votes = int(tags.get('votes',1))
@@ -80,34 +91,35 @@ def usquad_vote(tags, timestamp=None):
   choice = 0
   button_a.get_presses()
   button_b.was_pressed()
-  stop = False
+  stopVote = False
   display.show(choices[choice], delay=50, clear=False,wait=True)
-  while (not stop) and (vote_cn < _max_votes):
+  while (not stopVote) and (vote_cn < _max_votes):
     a_presses = button_a.get_presses()
     if a_presses > 0:
       choice = (choice + a_presses) % choices_max
       display.show(choices[choice])
     if button_b.was_pressed():
       usquad_send("read_vote",{"value":choice, "index":vote_cn})
-      display.show(IMG_SEND, delay=30, wait=True, clear=True)
+      display.show(IMG_SEND, wait=True, clear=False)
+      sleep(300)
       vote_cn += 1
       votes_left = _max_votes - vote_cn
       if(votes_left > 0):
         display.show(str(votes_left), clear=False, wait=True)
-        sleep(1500)
+        sleep(100)
         display.show(choices[choice], clear=False,wait=False)
     poll_messages()
-    if incoming is not None and (ulp_parse(incoming)[0] in METHOD_LIST):
-      stop = True
-  display.show(Image.HEART)
+    if incoming is not None and (not(incoming.startswith("read_") or incoming.startswith("bonjour"))) and (ulp_parse(incoming)[0] in METHOD_LIST):
+      stopVote = True # We keep incoming as it must be processed by the main loop now
+  display.show(Image.YES)
 
 def usquad_buttons(tags = None, timestamp=None):
-  global incoming
+  global incoming,METHOD_LIST
   button_a.was_pressed()
   button_b.was_pressed()
   display.show(Image.TRIANGLE)
-  stop = False
-  while not stop:
+  stopBtn = False
+  while not stopBtn:
     if button_a.was_pressed():
       usquad_send("read_button",{"button":"a"})
       display.show("a")
@@ -115,27 +127,29 @@ def usquad_buttons(tags = None, timestamp=None):
       usquad_send("read_button",{"button":"b"})
       display.show("b")
     poll_messages()
-    if incoming is not None and (ulp_parse(incoming)[0] in METHOD_LIST):
-      stop = True
+    if incoming is not None and (not(incoming.startswith("read_") or incoming == "bonjour")) and (ulp_parse(incoming)[0] in METHOD_LIST):
+      stopBtn = True # We keep incoming as it must be processed by the main loop now
     else:
       sleep(250)
       display.show(Image.SQUARE_SMALL)
       
   
 METHOD_MAP = const({
-  'image'     : usquad_image,
-  'vote'      : usquad_vote,
-  'buttons'   : usquad_buttons
+  'image'          : usquad_image,
+  # 'vote'           : usquad_vote,
+  'buttons'        : usquad_buttons,
+  'vote_particles' : usquad_vote_particles
 })
 METHOD_LIST = const(METHOD_MAP.keys())
 incoming = None
-  
 
 def poll_messages():
   global incoming
   if SIMU == False:
     incoming = radio.receive()
   
+
+# START AND MAIN LOOP
 display.show(Image.HEART)
 usquad_send("bonjour")
 
@@ -147,14 +161,17 @@ while True:
   poll_messages()
 
   while incoming is not None:
-    meas,tags,stamp = ulp_parse(incoming)
-    incoming = None
-    execute = True
-    if("dev_id" in tags.keys() and tags["dev_id"] != DEVID):
-      execute = False
-    method = METHOD_MAP.get(meas, None)
-    if method is None:
-      execute = False
-    if execute:
-      method(tags,stamp)
+    if incoming.startswith("read_") or incoming.startswith("bonjour"):
+      incoming = None # skip the message, it comes from another terminal
+    else:
+      meas,tags,stamp = ulp_parse(incoming)
+      incoming = None
+      execute = True
+      if("dev_id" in tags.keys() and tags["dev_id"] != DEVID):
+        execute = False
+      method = METHOD_MAP.get(meas, None)
+      if method is None:
+        execute = False
+      if execute:
+        method(tags,stamp)
   sleep(100)
