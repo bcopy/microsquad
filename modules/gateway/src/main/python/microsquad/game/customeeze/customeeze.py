@@ -1,8 +1,7 @@
-from homie.node.property.property_base import Property_Base
 from rx3 import Observable
 from microsquad.event import EventType, MicroSquadEvent
 from microsquad.mapper.homie.gateway.device_gateway import DeviceGateway
-
+import enum
 import logging
 
 from ..abstract_game import AGame, set_next_in_collection, set_prev_in_collection
@@ -24,7 +23,7 @@ SKINS = [
 
 ATTITUDES = ["Idle","Run","Walk","CrouchWalk","Wave"]
 
-import enum
+
 
 @enum.unique
 class TRANSITIONS(enum.Enum):
