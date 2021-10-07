@@ -2,7 +2,7 @@ from microbit import display,Image,sleep, button_a, button_b, running_time
 from micropython import const
 import radio 
 
-SIMU = False
+
 import machine
 
 DEVID = const("{:x}".format(int.from_bytes(machine.unique_id(), "big")))
@@ -10,30 +10,19 @@ DEVID = const("{:x}".format(int.from_bytes(machine.unique_id(), "big")))
 radio.config(channel=12, group=12, length=64, queue=2, power=4)
 radio.on()
 
-# IMG_SEND = const([(Image.ARROW_N * (i/2)) for i in range(2, -1, -1)])
-IMG_SEND = Image.ARROW_N
+_ELECTRON = (Image.ANGRY,[Image.ARROW_SE,"4",Image.DIAMOND_SMALL])
+_PROTON = (Image.SILLY,[Image.ARROW_SW,"2",Image.DIAMOND])
+_PHOTON = (Image.RABBIT,[Image.ARROW_S,"4", Image("0:0:00900:0:0")])
+_NEUTRON = (Image.PACMAN,[Image.ARROW_S,"2", Image.DIAMOND])
 
-PROTON_DISPLAY =   const("09990:99399:99999:99990:99000")
-ELECTRON_DISPLAY = const("90009:09090:00000:99999:90909")
-PHOTON_DISPLAY =   const("90900:90900:99990:99399:99999")
-NEUTRON_DISPLAY =  const("09900:99390:99999:00099:99990")
+_PARTICLES = [_ELECTRON,_PROTON,_PHOTON,_NEUTRON]
+
 
 def _pop_or_none(arr):
     if arr and len(arr)>0:
       return arr.pop(0)
     else:
       return None
-
-# def _tokenize(s, c):
-#      i = 0
-#      while True:
-#          try:
-#              j = s.index(c, i)
-#          except ValueError:
-#              yield s[i:]
-#              return
-#          yield s[i:j]
-#          i = j + 1
 
 def ulp_parse(msg):
     meas = None
@@ -66,28 +55,25 @@ def usquad_send(measurement, tags= {}, timestamp=None):
   tags["dev_id"] = DEVID
   msg = ulp_serialize(measurement, tags, timestamp)
   radio.send(msg)
-  
-def usquad_image(tags, timestamp=None):
-  images_str = tags['value']
-  img = [(Image(img_str)) for img_str in images_str.split(";")]
-  _del = int(tags.get('delay',1000))
-  _slp = int(tags.get('sleep',2000))
-  _wait = (tags.get('wait', "true").lower()=="true")
-  _clr = (tags.get('clear', "false").lower()=="true")
-  display.show(img, delay=_del, wait=_wait, clear=_clr)
-  sleep(_slp)
 
-def usquad_vote_particles(tags, timestamp = None):
-  usquad_vote({
-    "value" : (PROTON_DISPLAY+";"+ELECTRON_DISPLAY+";"+PHOTON_DISPLAY+";"+NEUTRON_DISPLAY),
-    "votes" : "1"
-  })
+def usquad_show(tags, timestamp=None):
+  particle_idx = int(tags['p'])
+  visual_idx = int(tags['v'])
+  display.show(_PARTICLES[particle_idx][1][visual_idx], delay=1000, wait=True, clear=False)
+  sleep(1000)
 
-def usquad_vote(tags, timestamp=None):
+def usquad_vote(tags,timestamp=None):
+  _vote(tags, [particle[0] for particle in _PARTICLES], timestamp)
+
+def usquad_emote(tags,timestamp=None):
+  _vote(tags, [Image.HEART,Image.SAD,Image.HAPPY,Image.SKULL], timestamp)
+
+def usquad_heart(tags,timestamp=None):
+  display.show(Image.HEART)
+
+def _vote(tags,choices:list,timestamp=None):
   global incoming,METHOD_LIST
-  images_str = tags['value']
-  choices =  [(Image(img_str)) for img_str in images_str.split(";")]
-  _max_votes = int(tags.get('votes',1))
+  _max_votes = int(tags.get('v',1))
   vote_cn = 0
   choices_max = len(choices)
   choice = 0
@@ -102,13 +88,13 @@ def usquad_vote(tags, timestamp=None):
       display.show(choices[choice])
     if button_b.was_pressed():
       usquad_send("read_vote",{"value":choice, "index":vote_cn})
-      display.show(IMG_SEND, wait=True, clear=False)
+      display.show(Image.ARROW_N, wait=True, clear=False)
       sleep(300)
       vote_cn += 1
       votes_left = _max_votes - vote_cn
       if(votes_left > 0):
         display.show(str(votes_left), clear=False, wait=True)
-        sleep(100)
+        sleep(500)
         display.show(choices[choice], clear=False,wait=False)
     poll_messages()
     if incoming is not None and (not(incoming.startswith("read_") or incoming.startswith("bonjour"))) and (ulp_parse(incoming)[0] in METHOD_LIST):
@@ -137,10 +123,11 @@ def usquad_buttons(tags = None, timestamp=None):
       
   
 METHOD_MAP = const({
-  'image'          : usquad_image,
-  # 'vote'           : usquad_vote,
+  'show'           : usquad_show,
+  'vote'           : usquad_vote,
   'buttons'        : usquad_buttons,
-  'vote_particles' : usquad_vote_particles
+  'emote'          : usquad_emote,
+  'heart'          : usquad_heart
 })
 METHOD_LIST = const(METHOD_MAP.keys())
 incoming = None

@@ -44,7 +44,6 @@ class Game(AGame):
     def start(self) -> None:
         print("Charges game starting")
         super().update_available_transitions([TRANSITIONS.SEND_ELECTRON, TRANSITIONS.SEND_PROTON])
-        super().device_gateway.update_broadcast("image,value=30003:30003:30003:30003:30003")
 
     def process_event(self, event:MicroSquadEvent) -> None:
         logger.debug("Charges received event {} for device {}: {}".format(event.event_type.name, event.device_id, event.payload))
@@ -76,23 +75,21 @@ class Game(AGame):
         if(TRANSITIONS(self._last_fired_transition) == TRANSITIONS.SEND_ELECTRON):
             # TODO : Add images and sounds on the scoreboard
             logger.debug("Sending an electron")
-            super().device_gateway.update_broadcast("image,value="+PARTICLE.ELECTRON.trajectory)
+            super().device_gateway.update_broadcast("show,p={},v=2".format(PARTICLE.ELECTRON.idx))
         elif(TRANSITIONS(self._last_fired_transition) == TRANSITIONS.SEND_PROTON):
             # TODO : Add images and sounds on the scoreboard
             logger.debug("Sending a proton")
-            super().device_gateway.update_broadcast("image,value="+PARTICLE.PROTON.trajectory)
+            super().device_gateway.update_broadcast("show,p={},v=2".format(PARTICLE.PROTON.idx))
         elif(TRANSITIONS(self._last_fired_transition) == TRANSITIONS.SEND_MYSTERY):
-            self._last_sent_particle = random.choice(PARTICLES)
+            self._last_sent_particle = PARTICLES[random.randint(0,1)]
             logger.debug("Sending {}".format(self._last_sent_particle.identifier))
-            super().device_gateway.update_broadcast("image,value="+self._last_sent_particle.trajectory)
+            super().device_gateway.update_broadcast("show,p={},v=0".format(self._last_sent_particle.idx))
         elif(TRANSITIONS(self._last_fired_transition) == TRANSITIONS.RESEND):
             logger.debug("Re-Sending {}".format(self._last_sent_particle.identifier))
-            super().device_gateway.update_broadcast("image,value="+self._last_sent_particle.trajectory)
+            super().device_gateway.update_broadcast("show,p={},v=0".format(self._last_sent_particle.idx))
         elif(TRANSITIONS(self._last_fired_transition) == TRANSITIONS.VOTE):
-            # vote_str = "vote,value="+(";".join([p.display for p in PARTICLES]))+",duration=4000"
-            vote_str = "vote_particles"
-            logger.debug("Sending {}".format(vote_str))
-            super().device_gateway.update_broadcast(vote_str)
+            logger.debug("Voting")
+            super().device_gateway.update_broadcast("vote")
         elif(TRANSITIONS(self._last_fired_transition) == TRANSITIONS.RESULTS):
             # Tally up the votes, make players say the result, change their animation (DEATH if they are wrong)
             pass
