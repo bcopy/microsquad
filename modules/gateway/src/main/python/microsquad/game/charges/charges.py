@@ -8,6 +8,8 @@ from rx3 import Observable
 from microsquad.event import EVENTS_SENSOR, EventType, MicroSquadEvent
 from microsquad.mapper.homie.gateway.device_gateway import DeviceGateway
 
+from ..particles import PARTICLE, PARTICLES
+
 
 @enum.unique
 class TRANSITIONS(enum.Enum):
@@ -15,26 +17,16 @@ class TRANSITIONS(enum.Enum):
   SEND_ELECTRON = "Send an electron"
   SEND_PROTON = "Send a proton"
   SEND_MYSTERY = "Send a surprise"
+  RESEND = "Resend"
   VOTE = "Vote"
   RESULTS = "Show results"
 
-@enum.unique
-class PARTICLE(enum.Enum):
-    PROTON = ("proton","09990:99399:99999:99990:99000", "30903:30003:30003:30003:30003;30903:30903:30003:30003:30003;30903:30903:30903:39003:90003")
-    ELECTRON = ("electron","90009:09090:00000:99999:90909", "30903:30003:30003:30003:30003;30903:30903:30003:30003:30003;30903:30903:30903:30093:30009")
-
-    def __init__(self, identifier : str, display : str, trajectory : str) -> None:
-        self.display = display
-        self.trajectory = trajectory
-        self.identifier = identifier
-    
-
-PARTICLES = list(PARTICLE)
 TRANSITION_GRAPH = { 
                 TRANSITIONS.START : [TRANSITIONS.SEND_ELECTRON, TRANSITIONS.SEND_PROTON],
                 TRANSITIONS.SEND_ELECTRON : [TRANSITIONS.SEND_ELECTRON, TRANSITIONS.SEND_PROTON, TRANSITIONS.SEND_MYSTERY],
                 TRANSITIONS.SEND_PROTON :  [TRANSITIONS.SEND_ELECTRON, TRANSITIONS.SEND_PROTON, TRANSITIONS.SEND_MYSTERY],
-                TRANSITIONS.SEND_MYSTERY : [TRANSITIONS.VOTE],
+                TRANSITIONS.SEND_MYSTERY : [TRANSITIONS.RESEND,TRANSITIONS.VOTE],
+                TRANSITIONS.RESEND : [TRANSITIONS.RESEND,TRANSITIONS.VOTE],
                 TRANSITIONS.VOTE : [TRANSITIONS.RESULTS]
             }
 
@@ -91,7 +83,10 @@ class Game(AGame):
             super().device_gateway.update_broadcast("image,value="+PARTICLE.PROTON.trajectory)
         elif(TRANSITIONS(self._last_fired_transition) == TRANSITIONS.SEND_MYSTERY):
             self._last_sent_particle = random.choice(PARTICLES)
-            logger.debug("Sending ".format(self._last_sent_particle.identifier))
+            logger.debug("Sending {}".format(self._last_sent_particle.identifier))
+            super().device_gateway.update_broadcast("image,value="+self._last_sent_particle.trajectory)
+        elif(TRANSITIONS(self._last_fired_transition) == TRANSITIONS.RESEND):
+            logger.debug("Re-Sending {}".format(self._last_sent_particle.identifier))
             super().device_gateway.update_broadcast("image,value="+self._last_sent_particle.trajectory)
         elif(TRANSITIONS(self._last_fired_transition) == TRANSITIONS.VOTE):
             # vote_str = "vote,value="+(";".join([p.display for p in PARTICLES]))+",duration=4000"
