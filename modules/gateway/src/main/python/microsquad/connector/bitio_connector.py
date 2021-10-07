@@ -19,7 +19,7 @@ class BitioConnector(AbstractConnector):
       super().__init__(event_source)
       self._queue = Queue(256)
       self._mapper = mapper
-      radio.config(length=128, channel=12, group=12)
+      radio.config(length=64, channel=12, group=12, power=7)
       radio.on()
 
     def queue(self, message, device_id = None):

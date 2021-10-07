@@ -7,7 +7,7 @@ import machine
 
 DEVID = const("{:x}".format(int.from_bytes(machine.unique_id(), "big")))
 
-radio.config(channel=12, group=12, length=128)
+radio.config(channel=12, group=12, length=64, queue=2, power=4)
 radio.on()
 
 # IMG_SEND = const([(Image.ARROW_N * (i/2)) for i in range(2, -1, -1)])
