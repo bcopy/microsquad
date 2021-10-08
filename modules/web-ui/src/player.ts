@@ -152,7 +152,6 @@ export class Player extends UpdateObject {
 
     set sayDuration(sayDuration:number){
         this._sayDuration = sayDuration;
-        this.say("");
     }
 
     set skin(name: string) {
