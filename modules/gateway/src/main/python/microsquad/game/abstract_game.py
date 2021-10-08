@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 @enum.unique
 class EMOTE(enum.Enum):
-    HEART = ("heart",0, "&#128151;")
+    HEART = ("heart",0, "&#10084;")
     SAD = ("sad",1, "&#128542;")
     HAPPY = ("happy",2, "&#128512;")
     SKULL = ("skull",3, "&#128565;")
@@ -72,6 +72,9 @@ class AGame(metaclass=ABCMeta):
     @property
     def device_gateway(self):
         return self._device_gateway
+
+    def get_all_player_nodes(self) -> list:
+        return filter(lambda node : node.id.startswith("player-"), self._device_gateway.nodes.values())
 
     def get_available_transitions_as_strings(self) -> list:
         return [t.value for t in self._available_transitions]
