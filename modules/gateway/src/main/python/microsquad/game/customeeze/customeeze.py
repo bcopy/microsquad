@@ -4,7 +4,8 @@ from microsquad.mapper.homie.gateway.device_gateway import DeviceGateway
 import enum
 import logging
 
-from ..abstract_game import AGame, set_next_in_collection, set_prev_in_collection, find_emote_by_idx
+from ..abstract_game import AGame, set_next_in_collection, set_prev_in_collection
+from ..emotes import find_emote_by_idx
 
 SKINS = [
         "alienA","alienB","animalA","animalB","animalBaseA","animalBaseB","animalBaseC","animalBaseD","animalBaseE","animalBaseF"
@@ -109,7 +110,7 @@ class Game(AGame):
             for pn in self.get_all_player_nodes():
                 pn.get_property("say-duration").value = 60000
                 pn.get_property("say").value = ""
-                pn.get_property("animation").value = ""
+                pn.get_property("animation").value = "Idle"
 
 
     def stop(self) -> None:
