@@ -45,9 +45,10 @@ export class MQTTClient {
     }
 
     subscribe(topic : string) {
-        let subs = document.getElementById('subscriptions');
-        subs.innerHTML += "Subscribed to " + topic + "<br />";
+        // let subs = document.getElementById('subscriptions');
+        // subs.innerHTML += "Subscribed to " + topic + "<br />";
       
+        console.log("MQTT : Subscribed to " + topic);
         this.client.subscribe(topic);
     }
 }

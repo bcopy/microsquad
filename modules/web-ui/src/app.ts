@@ -200,12 +200,12 @@ var playerManager = new PlayerManager(playerSubject);
 
 window['playerManager'] = playerManager;
 
-var addPlayerButton : HTMLButtonElement = <HTMLButtonElement>document.getElementById("add-player");
-addPlayerButton.addEventListener('click', () => { playerManager.addPlayer("Player:"+ Math.random().toString(36).substr(2, 5), true) });
+// var addPlayerButton : HTMLButtonElement = <HTMLButtonElement>document.getElementById("add-player");
+// addPlayerButton.addEventListener('click', () => { playerManager.addPlayer("Player:"+ Math.random().toString(36).substr(2, 5), true) });
 
 
-var zoomScreenButton : HTMLButtonElement = <HTMLButtonElement>document.getElementById("zoom-screen");
-zoomScreenButton.addEventListener('click', () => { fitCameraToObject(camera,scoreboard.mesh) });
+// var zoomScreenButton : HTMLButtonElement = <HTMLButtonElement>document.getElementById("zoom-screen");
+// zoomScreenButton.addEventListener('click', () => { fitCameraToObject(camera,scoreboard.mesh) });
 
 var scoreboard = new Scoreboard(UpdateObject.context, scoreboardSubject);
 
