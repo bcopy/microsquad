@@ -109,6 +109,7 @@ class Game(AGame):
             for pn in self.get_all_player_nodes():
                 pn.get_property("say-duration").value = 60000
                 pn.get_property("say").value = ""
+                pn.get_property("animation").value = ""
 
 
     def stop(self) -> None:
