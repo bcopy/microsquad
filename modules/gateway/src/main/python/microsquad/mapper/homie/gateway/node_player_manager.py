@@ -35,9 +35,8 @@ class NodePlayerManager(Node_Base):
                 - or empty (random UUID)
         """
         if(identifier not in self.players):
-            new_player_index = self.player_counter
             self.player_counter += 1
-            self.device.add_node(NodePlayer(self.device,id="player-"+identifier, name=identifier, order = "{:05d}".format(new_player_index)))
+            self.device.add_node(NodePlayer(self.device,id="player-"+identifier, name=identifier, order = identifier))
             self.players.append(identifier)
             self.get_property("list").value = ",".join(self.players)
             logger.info("Player Added : {}".format(identifier))
