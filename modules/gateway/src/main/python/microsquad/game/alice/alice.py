@@ -14,6 +14,8 @@ logger = logging.getLogger(__name__)
 class TRANSITIONS(enum.Enum):
   SIZE = "Size"
   ROTATE = "Rotate"
+  def equals(self, string):
+       return self.value == string
 
 class Game(AGame):
     """ 

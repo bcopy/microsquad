@@ -52,6 +52,9 @@ export class PlayerManager {
             case "say":
                 this.players[playerId].say(event.newValue);
                 break;
+            case "say-duration":
+                this.players[playerId].sayDuration = parseInt(event.newValue);
+                break;
             default:
                 console.warn(`PlayerManager : ${event.property} was not a recognized property.`)
                 break;

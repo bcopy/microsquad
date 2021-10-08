@@ -30,11 +30,14 @@ class TRANSITIONS(enum.Enum):
   SELECT_SKIN = "Select skin"
   SELECT_ATTITUDE = "Select attitude"
   EMOJIS = "Emojis"
+  CLEAR = "Clear"
+  def equals(self, string):
+       return self.value == string
 
 TRANSITION_GRAPH = { 
                 TRANSITIONS.SELECT_SKIN : [TRANSITIONS.SELECT_ATTITUDE],
                 TRANSITIONS.SELECT_ATTITUDE : [TRANSITIONS.EMOJIS],
-                TRANSITIONS.EMOJIS : [TRANSITIONS.EMOJIS]
+                TRANSITIONS.EMOJIS : [TRANSITIONS.EMOJIS, TRANSITIONS.CLEAR]
             }
 
 
@@ -63,24 +66,26 @@ class Game(AGame):
             else:
                 if super().last_fired_transition is None:
                     playerNode.get_property("animation").value = "Wave"
-                elif super().last_fired_transition == TRANSITIONS.SELECT_SKIN.value:
-                    if event.payload["button"]=="a" :
-                        # Shift the player's skin
-                        set_next_in_collection(playerNode.get_property("skin"), SKINS)
-                    elif event.payload["button"]=="b" :
-                        # Shift the player's skin
-                        set_prev_in_collection(playerNode.get_property("skin"), SKINS)
-                elif super().last_fired_transition == TRANSITIONS.SELECT_ATTITUDE.value:
-                    if event.payload["button"]=="a" :
-                        set_next_in_collection(playerNode.get_property("animation"), ATTITUDES)
-                    elif event.payload["button"]=="b" :
-                        set_prev_in_collection(playerNode.get_property("animation"), ATTITUDES)
+                else:
+                    last_fired = TRANSITIONS(super().last_fired_transition)
+                    if last_fired == TRANSITIONS.SELECT_SKIN:
+                        if event.payload["button"]=="a" :
+                            # Shift the player's skin
+                            set_next_in_collection(playerNode.get_property("skin"), SKINS)
+                        elif event.payload["button"]=="b" :
+                            # Shift the player's skin
+                            set_prev_in_collection(playerNode.get_property("skin"), SKINS)
+                    elif last_fired == TRANSITIONS.SELECT_ATTITUDE:
+                        if event.payload["button"]=="a" :
+                            set_next_in_collection(playerNode.get_property("animation"), ATTITUDES)
+                        elif event.payload["button"]=="b" :
+                            set_prev_in_collection(playerNode.get_property("animation"), ATTITUDES)
+                    elif last_fired == TRANSITIONS.EMOJIS:
+                        if event.event_type == EventType.VOTE:
+                            emote = find_emote_by_idx(int(event.payload["value"]))
+                            if emote is not None:
+                                playerNode.get_property("say").value = "<span>{} !</span>".format(emote.entity)
                     
-                elif super().last_fired_transition == TRANSITIONS.EMOJIS.value:
-                    if event.event_type == EventType.VOTE:
-                       emote = find_emote_by_idx(int(event.payload["value"]))
-                       if emote is not None:
-                           playerNode.get_property("say").value = "<span>{} !</span>".format(emote.entity)
 
                     
 
@@ -95,10 +100,15 @@ class Game(AGame):
         else:
                 super().update_available_transitions([])  
         
-        if(TRANSITIONS(self._last_fired_transition) == TRANSITIONS.EMOJIS):
+        last_fired = TRANSITIONS(self._last_fired_transition)
+        if( last_fired == TRANSITIONS.EMOJIS):
               # Switch everybody back to idle
               # Trigger a vote
             super().device_gateway.update_broadcast("emote,v=5") 
+        elif(last_fired == TRANSITIONS.CLEAR):
+            for pn in self.get_all_player_nodes():
+                pn.get_property("say-duration").value = 60000
+                pn.get_property("say").value = ""
 
 
     def stop(self) -> None:
