@@ -33,9 +33,8 @@ class AGame(metaclass=ABCMeta):
     def start(self) -> None:
         pass
 
-    @abstractmethod
     def stop(self) -> None:
-        pass
+        logger.debug("Game {} now stopped.".format(__name__))
 
     def fire_transition(self, transition) -> None:
         self._last_fired_transition = transition
