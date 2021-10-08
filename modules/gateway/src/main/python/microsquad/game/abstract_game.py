@@ -2,6 +2,7 @@ from abc import ABCMeta,abstractmethod
 
 import logging
 import threading
+import enum
 
 from homie.node.property.property_base import Property_Base
 from microsquad.event import EventType, MicroSquadEvent
@@ -10,6 +11,27 @@ from ..mapper.homie.gateway.device_gateway import DeviceGateway
 from rx3 import Observable
 
 logger = logging.getLogger(__name__)
+
+@enum.unique
+class EMOTE(enum.Enum):
+    HEART = ("heart",0, "&#128151;")
+    SAD = ("sad",1, "&#128542;")
+    HAPPY = ("happy",2, "&#128512;")
+    SKULL = ("skull",3, "&#128565;")
+
+    def __init__(self, id:str,idx:int, entity:str) -> None:
+        self.id = id
+        self.idx = idx
+        self.entity = entity
+    
+    def equals(self, string) -> bool:
+       return self.value == string
+
+def find_emote_by_idx(idx:int) -> EMOTE:
+    return next((emote for emote in list(EMOTE) if emote.idx == idx), None)
+
+def find_emote_by_ide(id:str) -> EMOTE:
+    return next((emote for emote in list(EMOTE) if emote.id == id), None)
 
 class AGame(metaclass=ABCMeta):
     """
