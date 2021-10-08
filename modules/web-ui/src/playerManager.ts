@@ -35,22 +35,22 @@ export class PlayerManager {
 
         switch (event.property) {
             case "skin":
-                this.players[playerId].skin = event.newValue;
-                break;
             case "order":
-                    this.players[playerId].order = event.newValue;
-                    break;
+            case "accessory":
+            case "nickname":
+                (this.players[playerId] as any)[event.property] = event.newValue;
+                break;
+            case "scale":
+                this.players[playerId].scaleFactor = parseFloat(event.newValue);
+                break;
+            case "rotation":
+                (this.players[playerId] as any)[event.property] = parseFloat(event.newValue);
+                break;
             case "animation":
                 this.players[playerId].changeAnimation(event.newValue);
                 break;
             case "say":
                 this.players[playerId].say(event.newValue);
-                break;
-            case "accessory":
-                this.players[playerId].accessory = event.newValue;
-                break;
-            case "nickname":
-                this.players[playerId].nickname = event.newValue;
                 break;
             default:
                 console.warn(`PlayerManager : ${event.property} was not a recognized property.`)

@@ -17,7 +17,8 @@ export class Player extends UpdateObject {
     static skins = {};
 
     id : string;
-    order: number;
+    order: string;
+    _scaleFactor: number = 1.0;
 
     private _nickname : string;
     
@@ -30,7 +31,7 @@ export class Player extends UpdateObject {
     private _skin : string;
     private _accessory : string;
 
-    constructor (id : string, team: Team, order : number = 0) {
+    constructor (id : string, team: Team, order : string = "00000") {
         super();
         this.id = id;
         this.team = team;
@@ -75,7 +76,7 @@ export class Player extends UpdateObject {
             action.play();
         } else {
             console.warn(`Animation "${name}" not found!`);
-        }     
+        }
     }
 
     changeTeam(team: Team) {
@@ -195,6 +196,7 @@ export class Player extends UpdateObject {
 
     set scale(val : number) {
         if (this.model) {
+            val *= this._scaleFactor;
             this.model.scale.set(val, val, val);
             this.nametag.position.copy(this.model.position).y += Player.nametag_vertical_offset * this.scale;
         }
@@ -202,6 +204,14 @@ export class Player extends UpdateObject {
 
     get scale() {
         return this.model.scale.x;
+    }
+
+    set scaleFactor(val : number){
+        this._scaleFactor = val;
+    }
+
+    get scaleFactor(){
+        return this._scaleFactor;
     }
 
     update(delta : number) {
