@@ -36,7 +36,9 @@ class NodePlayerManager(Node_Base):
         """
         if(identifier not in self.players):
             self.player_counter += 1
-            self.device.add_node(NodePlayer(self.device,id="player-"+identifier, name=identifier, order = identifier))
+            new_player = NodePlayer(self.device,id="player-"+identifier, name=identifier, order = identifier)
+            new_player.get_property("terminal-id").value = identifier
+            self.device.add_node(new_player)
             self.players.append(identifier)
             self.get_property("list").value = ",".join(self.players)
             logger.info("Player Added : {}".format(identifier))
