@@ -10,12 +10,14 @@ DEVID = const("{:x}".format(int.from_bytes(machine.unique_id(), "big")))
 radio.config(channel=12, group=12, length=64, queue=2, power=4)
 radio.on()
 
-_ELECTRON = (Image.ANGRY,[Image.ARROW_SE,"4",Image.DIAMOND_SMALL])
-_PROTON = (Image.SILLY,[Image.ARROW_SW,"2",Image.DIAMOND])
-_PHOTON = (Image.RABBIT,[Image.ARROW_S,"4", Image("0:0:00900:0:0")])
-_NEUTRON = (Image.PACMAN,[Image.ARROW_S,"2", Image.DIAMOND])
+_ELECTRON = (Image.ANGRY,[Image.ARROW_SE,Image.DIAMOND_SMALL,Image.HEART])
+_PROTON = (Image.SILLY,[Image.ARROW_SW,Image.TARGET,Image.HEART])
+_PHOTON = (Image.RABBIT,[Image.ARROW_S,Image.DIAMOND_SMALL,Image.HEART])
+_NEUTRON = (Image.PACMAN,[Image.ARROW_S,Image.TARGET,Image.HEART])
+_POSITRON = (Image.ASLEEP,[Image.ARROW_SW,Image.DIAMOND_SMALL, Image.HEART_SMALL])
+_ANTIPROTON = (Image.SURPRISED,[Image.ARROW_SE, Image.TARGET, Image.HEART_SMALL])
 
-_PARTICLES = [_ELECTRON,_PROTON,_PHOTON,_NEUTRON]
+_PARTICLES = [_ELECTRON,_PROTON,_PHOTON,_NEUTRON, _POSITRON, _ANTIPROTON]
 
 
 def _pop_or_none(arr):
@@ -68,8 +70,8 @@ def usquad_vote(tags,timestamp=None):
 def usquad_emote(tags,timestamp=None):
   _vote(tags, [Image.HEART,Image.SAD,Image.HAPPY,Image.SKULL], timestamp)
 
-def usquad_heart(tags,timestamp=None):
-  display.show(Image.HEART)
+def usquad_alive(tags,timestamp=None):
+  display.show(Image.CHESSBOARD)
 
 def _vote(tags,choices:list,timestamp=None):
   global incoming,METHOD_LIST
@@ -127,7 +129,7 @@ METHOD_MAP = const({
   'vote'           : usquad_vote,
   'buttons'        : usquad_buttons,
   'emote'          : usquad_emote,
-  'heart'          : usquad_heart
+  'alive'          : usquad_alive,
 })
 METHOD_LIST = const(METHOD_MAP.keys())
 incoming = None
@@ -138,16 +140,14 @@ def poll_messages():
   
 
 # START AND MAIN LOOP
-display.show(Image.HEART)
+display.show(Image.CHESSBOARD)
 usquad_send("bonjour")
 
 while True:
   meas = ""
   tags = ""
   stamp = 0
-  
   poll_messages()
-
   while incoming is not None:
     if incoming.startswith("read_") or incoming.startswith("bonjour"):
       incoming = None # skip the message, it comes from another terminal
