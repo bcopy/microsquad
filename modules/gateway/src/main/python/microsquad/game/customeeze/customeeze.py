@@ -1,10 +1,10 @@
 from rx3 import Observable
-from microsquad.event import EventType, MicroSquadEvent
+from microsquad.event import EVENTS_SENSOR, EventType, MicroSquadEvent
 from microsquad.mapper.homie.gateway.device_gateway import DeviceGateway
 import enum
 import logging
 
-from ..abstract_game import AGame, set_next_in_collection, set_prev_in_collection
+from ..abstract_game import AGame, set_next_in_collection, set_prev_in_collection, find_emote_by_idx
 
 SKINS = [
         "alienA","alienB","animalA","animalB","animalBaseA","animalBaseB","animalBaseC","animalBaseD","animalBaseE","animalBaseF"
@@ -37,6 +37,8 @@ TRANSITION_GRAPH = {
                 TRANSITIONS.EMOJIS : [TRANSITIONS.EMOJIS]
             }
 
+
+
 logger = logging.getLogger(__name__)
 
 class Game(AGame):
@@ -54,12 +56,12 @@ class Game(AGame):
     def process_event(self, event:MicroSquadEvent) -> None:
         logger.debug("Customeeze received event {} for device {}: {}".format(event.event_type.name, event.device_id, event.payload))
         self.device_gateway.get_node("players-manager").add_player(event.device_id)
-        if event.event_type==EventType.BUTTON:
+        if event.event_type in EVENTS_SENSOR:
             playerNode = self.device_gateway.get_node("player-"+event.device_id)
             if playerNode is None:
                 logger.warn("Player {} is not known".format("player-"+event.device_id))
             else:
-                if super().last_fired_transition is None or super().last_fired_transition not in [TRANSITIONS.SELECT_ATTITUDE.value, TRANSITIONS.SELECT_SKIN.value]:
+                if super().last_fired_transition is None:
                     playerNode.get_property("animation").value = "Wave"
                 elif super().last_fired_transition == TRANSITIONS.SELECT_SKIN.value:
                     if event.payload["button"]=="a" :
@@ -75,13 +77,11 @@ class Game(AGame):
                         set_prev_in_collection(playerNode.get_property("animation"), ATTITUDES)
                     
                 elif super().last_fired_transition == TRANSITIONS.EMOJIS.value:
-                    # if event.payload["button"]=="a" :
-                    #     # Shift the player's attitude
-                    #     set_next_in_collection(playerNode.get_property("skin"), SKINS)
-                    # elif event.payload["button"]=="b" :
-                    #     # Shift the player's attitude
-                    #     set_prev_in_collection(playerNode.get_property("skin"), SKINS)
-                    pass
+                    if event.event_type == EventType.VOTE:
+                       emote = find_emote_by_idx(int(event.payload["value"]))
+                       if emote is not None:
+                           playerNode.get_property("say").value = "<span>{} !</span>".format(emote.entity)
+
                     
 
     def fire_transition(self, transition) -> None:

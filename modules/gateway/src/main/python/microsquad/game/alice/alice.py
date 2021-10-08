@@ -12,13 +12,8 @@ logger = logging.getLogger(__name__)
 
 @enum.unique
 class TRANSITIONS(enum.Enum):
-  GROW = "Grow"
-  SHRINK = "Shrink"
-  CLOCKWISE = "Clockwise"
-  ANTICLOCKWISE = "Anticlockwise"
-
-SCALE_TRANSITIONS = [TRANSITIONS.GROW, TRANSITIONS.SHRINK]
-ROTATION_TRANSITIONS = [TRANSITIONS.CLOCKWISE,TRANSITIONS.ANTICLOCKWISE]
+  SIZE = "Size"
+  ROTATE = "Rotate"
 
 class Game(AGame):
     """ 
@@ -31,7 +26,7 @@ class Game(AGame):
     def start(self) -> None:
         print("Alice game starting")
         super().update_available_transitions(list(TRANSITIONS))
-        super().fire_transition(TRANSITIONS.GROW)
+        super().fire_transition(TRANSITIONS.SIZE)
         super().device_gateway.update_broadcast("buttons")
 
     def fire_transition(self, transition) -> None:
@@ -42,14 +37,15 @@ class Game(AGame):
         self.device_gateway.get_node("players-manager").add_player(event.device_id)
         if event.event_type == EventType.BUTTON:
             transition =TRANSITIONS(self._last_fired_transition)
-            if transition in SCALE_TRANSITIONS:
-                factor = 1.1
-                if transition == TRANSITIONS.SHRINK:
-                    factor = 0.9
-                self.device_gateway.get_node("player-"+event.device_id).get_property("scale").value *= factor
-            if transition in ROTATION_TRANSITIONS:
+            if transition == TRANSITIONS.SIZE:
+                if(event.event_type == EventType.BUTTON):
+                  factor = 0.9
+                  if event.payload["button"]=="b" :
+                      factor = 1.1
+                  self.device_gateway.get_node("player-"+event.device_id).get_property("scale").value *= factor
+            if transition == TRANSITIONS.ROTATE:
                 angle_modifier = -0.2
-                if transition == TRANSITIONS.ANTICLOCKWISE:
+                if event.payload["button"]=="b" :
                     angle_modifier = 0.2
                 self.device_gateway.get_node("player-"+event.device_id).get_property("rotation").value += angle_modifier
 
