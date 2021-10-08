@@ -404,7 +404,7 @@ function onMessageArrived(message : any) {
 // }
 
 
-function commandHandler(incomingTopic, value) {
+function commandHandler(incomingTopic, value:string) {
     let topic = incomingTopic.substring(mqttSubscriptionRoot.length-1);
     let topicParts = topic.split("/");
 
@@ -457,19 +457,21 @@ function commandHandler(incomingTopic, value) {
             if(topicParts[2] == "transitions"){
                 var controlsDiv = <HTMLDivElement>document.getElementById("transition-controls");
                 controlsDiv.innerHTML="";
-                value.split(",").forEach(transition => {
-                    var transitionButton : HTMLAnchorElement = <HTMLAnchorElement>document.createElement("a");
-                    transitionButton.classList.add("btn", "btn-primary", "btn-sm");
-                    transitionButton.setAttribute("role", "button");
-                    transitionButton.innerHTML = transition;
-                    transitionButton.setAttribute("data-transition-name", transition);
-                    transitionButton.addEventListener('click', event => { 
-                               var trns = (event.target as Element).getAttribute("data-transition-name");
-                               console.log("firing transition "+trns);
-                               fireTransitionViaMQTT(trns)
+                if(value.trim() != ""){
+                    value.split(",").forEach(transition => {
+                        var transitionButton : HTMLAnchorElement = <HTMLAnchorElement>document.createElement("a");
+                        transitionButton.classList.add("btn", "btn-primary", "btn-sm");
+                        transitionButton.setAttribute("role", "button");
+                        transitionButton.innerHTML = transition;
+                        transitionButton.setAttribute("data-transition-name", transition);
+                        transitionButton.addEventListener('click', event => { 
+                                var trns = (event.target as Element).getAttribute("data-transition-name");
+                                console.log("firing transition "+trns);
+                                fireTransitionViaMQTT(trns)
                         });
-                    controlsDiv.appendChild(transitionButton);
-                });
+                        controlsDiv.appendChild(transitionButton);
+                    });
+                }
             }
 
         }
