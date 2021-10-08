@@ -8,6 +8,8 @@ from ..particles import PARTICLE, PARTICLES
 
 class Game(AParticleVotingGame):
     def __init__(self, event_source: Observable, gateway : DeviceGateway) -> None:
-        super().__init__(event_source, gateway, PARTICLE.ELECTRON, PARTICLE.PROTON, 0)
+        super().__init__(event_source, gateway, PARTICLE.ELECTRON, PARTICLE.POSITRON, 2)
 
+    def get_random_particle(self):
+        return random.choice([PARTICLE.ELECTRON,PARTICLE.POSITRON])
         
