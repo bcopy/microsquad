@@ -111,6 +111,7 @@ class Game(AGame):
                 pn.get_property("say-duration").value = 60000
                 pn.get_property("say").value = ""
                 pn.get_property("animation").value = "Idle"
+                pn.get_property("scale").value = 1.0
 
 
     def stop(self) -> None:
