@@ -39,7 +39,7 @@ class BitioConnector(AbstractConnector):
             payload = outgoing_msg[0]
             device_id = outgoing_msg[1]
             if(device_id is not None):
-                payload += ",dev_id=\"{}\"".format(str(device_id))
+                payload += ",dev_id={}".format(str(device_id))
             logging.debug("Sending " + payload+" (left "+str((self._queue.qsize()))+")")
             radio.send(payload)
         except Empty:
