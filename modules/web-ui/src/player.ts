@@ -92,7 +92,7 @@ export class Player extends UpdateObject {
         }
         if( ! (message === "")){
             let p = this.position.clone();
-            p.y += Player.dialog_height * (this.scale * this._scaleFactor);
+            p.y += Player.dialog_height * this.scale;
             this.dialog_box = new DialogBox3D(message, p, (this._sayDuration/1000));
         }
     }
