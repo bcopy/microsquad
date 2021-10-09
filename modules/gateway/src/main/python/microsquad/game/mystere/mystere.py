@@ -7,6 +7,8 @@ from ..abstract_game import AGame, set_next_in_collection, set_prev_in_collectio
 
 import enum
 import random
+import base64
+
 from rx3 import Observable
 from microsquad.event import EVENTS_SENSOR, EventType, MicroSquadEvent
 from microsquad.mapper.homie.gateway.device_gateway import DeviceGateway
@@ -50,6 +52,9 @@ class Game(AGame):
         print("Mystery Particles game starting")
         super().update_available_transitions([TRANSITIONS.SEND_PARTICLE])
         self.fire_transition(TRANSITIONS.START)
+        with open("src/main/python/microsquad/game/summary.png", "rb") as image_file:
+            string_data = base64.b64encode(image_file.read())
+            super().device_gateway.get_node("scoreboard").get_property("image").value = "data:image/png;base64,"+(string_data.decode("ascii"))
 
     def process_event(self, event:MicroSquadEvent) -> None:
         logger.debug("Game received event {} for device {}: {}".format(event.event_type.name, event.device_id, event.payload))

@@ -3,6 +3,7 @@ from microsquad.event import EVENTS_SENSOR, EventType, MicroSquadEvent
 from microsquad.mapper.homie.gateway.device_gateway import DeviceGateway
 import enum
 import logging
+import base64
 
 from ..abstract_game import AGame, set_next_in_collection, set_prev_in_collection
 from ..emotes import find_emote_by_idx
@@ -56,6 +57,7 @@ class Game(AGame):
         print("Customeeze starting")
         super().update_available_transitions([TRANSITIONS.SELECT_SKIN])
         super().device_gateway.update_broadcast("buttons")
+        super().device_gateway.get_node("scoreboard").get_property("image").value = ""
 
     def process_event(self, event:MicroSquadEvent) -> None:
         logger.debug("Customeeze received event {} for device {}: {}".format(event.event_type.name, event.device_id, event.payload))
