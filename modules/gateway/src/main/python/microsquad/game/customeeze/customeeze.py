@@ -57,7 +57,7 @@ class Game(AGame):
         print("Customeeze starting")
         super().update_available_transitions([TRANSITIONS.SELECT_SKIN])
         super().device_gateway.update_broadcast("buttons")
-        super().device_gateway.get_node("scoreboard").get_property("image").value = ""
+        super().device_gateway.get_node("scoreboard").get_property("image").value = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAlgAAAAoCAYAAAAi24Q0AAAAq0lEQVR42u3WQQEAAAQEsJNcdEr42VKskukAAHCmBAsAQLAAAAQLAECwAAAQLAAAwQIAECwAAAQLAECwAAAECwAAwQIAECwAAMECABAsAAAECwBAsAAABAsAAMECABAsAADBAgBAsAAABAsAQLAAABAsAADBAgAQLAAAwQIAQLAAAAQLAECwAAAQLAAAwQIAECwAAAQLAECwAAAECwAAwQIAECwAAMECAPhnAVXnO9nPYEM/AAAAAElFTkSuQmCC"
 
     def process_event(self, event:MicroSquadEvent) -> None:
         logger.debug("Customeeze received event {} for device {}: {}".format(event.event_type.name, event.device_id, event.payload))

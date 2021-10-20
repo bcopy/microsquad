@@ -13,5 +13,4 @@ class Game(AParticleVotingGame):
         with open("src/main/python/microsquad/game/charge-electron.png", "rb") as image_file:
             string_data = base64.b64encode(image_file.read())
             super().device_gateway.get_node("scoreboard").get_property("image").value = "data:image/png;base64,"+(string_data.decode("ascii"))
-
         
