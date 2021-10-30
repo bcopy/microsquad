@@ -37,6 +37,7 @@ class HomieController():
         """
         HomieClient limitations :
           * No Websockets support (WS_PATH, MQTT_TRANSPORT, TLS SUPPORT)
+          * Read-only : does not support updating properties
           * Does not use asyncio futures
         """
         self.homie_client = HomieClient(server=self.mqtt_settings["MQTT_BROKER"], prefix=self.homie_settings["HOMIE_PREFIX"])
