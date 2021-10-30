@@ -47,12 +47,9 @@ class AbstractConnector(metaclass=ABCMeta):
         while run:
             try: 
               self.dispatch_next()
-            except:
+            except Exception as e:
                 error_count += 1
-                logging.exception("Error during connector dispatch")
-                if error_count > 10:
-                    logging.fatal("Error count exceeded, exiting connector loop")
-                    self._thread_terminate = True
+                logging.exception("Error during connector dispatch : {}".format(e))
                 
             def should_exit():
                 return run is False or self._thread_terminate is True
