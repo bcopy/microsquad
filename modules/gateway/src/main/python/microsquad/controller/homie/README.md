@@ -3,8 +3,6 @@
 A Microsquad controller obtains MQTT events and performs callbacks for potential subscribers.
 Also allows to update settable properties.
 
-Note that the controller is a pure MQTT implementation - it does not
-depend on any Homie API.
 Callbacks are handled by RxPy observables.
 
 ## Supported reactive event types

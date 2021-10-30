@@ -10,7 +10,8 @@ logger = logging.getLogger(__name__)
 
 class SimpleHomieController():
     """
-    A simple controller without dependencies (besides an MQTT client)
+    A simple controller without dependencies (besides an MQTT client), relies on Homie
+    convention to collect device / node / property updates.
     """
     def __init__(self,mqtt_settings,homie_settings) -> None:
         self.mqtt_settings = mqtt_settings

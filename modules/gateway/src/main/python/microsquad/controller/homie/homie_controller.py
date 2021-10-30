@@ -51,7 +51,7 @@ class HomieController():
             self._known_terminals.append(node.device.id)
             # Terminal event
             if(self.event_source is not None):
-                logger.debut("New terminal detected : {}".format(node.device["device-id"]))
+                logger.debug(f"New terminal detected : {node.device['device-id']}")
                 self.event_source.on_next(MicroSquadEvent(EventType.TERMINAL_DISCOVERED,node.device["device-id"]))
                 # Forward the event to any RxPy observers
                 self.event_source.on_next(MicroSquadEvent(EventType[str(node.name+"_"+property)],node.device["device-id"],value))
@@ -61,7 +61,7 @@ class HomieController():
                 self._known_games.append(value)
                 # Terminal event
                 if(self.event_source is not None):
-                    logger.debut("New game started : {}".format(value))
+                    logger.debug(f"New game started : {value}")
                     self.event_source.on_next(MicroSquadEvent(EventType.GAME_DISCOVERED,payload=value))
                     # TODO : Reset all known players ? all known terminals ?
             # TODO: Forward the property update to any listeners
@@ -70,7 +70,7 @@ class HomieController():
             if(property == "terminal-id" and value not in self._known_players):
                 self._known_games.append(value)
                 if(self.event_source is not None):
-                    logger.debut("New player discovered : {}".format(value))
+                    logger.debug(f"New player discovered : {value}")
                     self.event_source.on_next(MicroSquadEvent(EventType.PLAYER_DISCOVERED,payload=value))
             # TODO: Forward the property update to any listeners
             
