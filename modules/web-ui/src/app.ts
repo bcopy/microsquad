@@ -15,7 +15,7 @@ var config = envConfig;
 
 var assetsConfig : any;
 
-var mqttTopicRoot : string;
+// var mqttTopicRoot : string;
 
 var mqttClient :MQTTClient;
 
@@ -50,9 +50,17 @@ function startMqttSubscriptions(){
         mqttClientId = "microsquad-web:" + Math.random().toString(36).substr(2, 5); // unique client ID to prevent reconnect loop
     }
 
+    var mqttTopicRoot : string;
+
+    if(config.MQTT_TOPIC_ROOT != null){
+        mqttTopicRoot = config.MQTT_TOPIC_ROOT
+    }
+    mqttSubscriptionRoot = mqttTopicRoot +"/#";
+
     mqttClient = new MQTTClient(
         config.MQTT_URI,
         mqttClientId,
+        mqttTopicRoot,
         onMessageArrived,
         onMqttConnect,
         onMqttConnectionLost,
@@ -493,14 +501,12 @@ function onMqttConnect() {
         // Update the game name
         updateGameNameViaMQTT();
     },500);
-    // subButton.disabled = false;
-    // pubButton.disabled = false;
     
 }
 
-function updateGameNameViaMQTT(){
-    mqttClient.publish(mqttTopicRoot + "/gateway/game/name/set", gameName);
-}
+// function updateGameNameViaMQTT(){
+//     mqttClient.publish(mqttTopicRoot + "/gateway/game/name/set", gameName);
+// }
 
 function fireTransitionViaMQTT(transition){
     mqttClient.publish(mqttTopicRoot + "/gateway/game/fire-transition/set", transition);
