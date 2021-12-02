@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { Subject } from 'rxjs';
-import { MQTTClient, MqttMicrosquadEventType,MqttUpdateEvent } from "./mqtt";
+import { MQTTClient, MqttUpdateEvent } from "./mqtt";
 import { PlayerManager } from './playerManager';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { Context, UpdateObject } from "./updateObject";
@@ -17,9 +17,7 @@ var assetsConfig : any;
 
 // var mqttTopicRoot : string;
 
-var mqttClient :MQTTClient;
-
-var mqttClientId : string;
+var mqttClient : MQTTClient;
 
 const playerSubject : Subject<MqttUpdateEvent> = new Subject();
 const teamSubject : Subject<MqttUpdateEvent> = new Subject();
@@ -27,12 +25,10 @@ const scoreboardSubject : Subject<MqttUpdateEvent> = new Subject();
 
 // var sessionCode = "session-default";
 
-var gameName = "";
+// var mqttSubscriptionRoot:string;
 
-var mqttSubscriptionRoot:string;
-
-var playerStates = new Map();
-var teamStates = new Map();
+// var playerStates = new Map();
+// var teamStates = new Map();
 
 const loader = new THREE.FileLoader();
 
@@ -41,7 +37,8 @@ function startMqttSubscriptions(){
     const queryString = window.location.search;
     const urlParams = new URLSearchParams(window.location.search);
     // sessionCode = urlParams.get('sc') ?? "session-default";
-    gameName = urlParams.get('gn') ?? "";
+    var gameName = urlParams.get('gn') ?? "";
+    var mqttClientId : string;
     const urlClientId = urlParams.get('ci');
     if (urlClientId != null) {
         mqttClientId = "microsquad-web:" + urlClientId; // if specified in the URL, retain the same client ID
@@ -55,15 +52,16 @@ function startMqttSubscriptions(){
     if(config.MQTT_TOPIC_ROOT != null){
         mqttTopicRoot = config.MQTT_TOPIC_ROOT
     }
-    mqttSubscriptionRoot = mqttTopicRoot +"/#";
+    // mqttSubscriptionRoot = mqttTopicRoot +"/#";
 
     mqttClient = new MQTTClient(
         config.MQTT_URI,
         mqttClientId,
         mqttTopicRoot,
-        onMessageArrived,
-        onMqttConnect,
-        onMqttConnectionLost,
+        gameName,
+        playerSubject,
+        teamSubject,
+        scoreboardSubject
     );
 }
 
@@ -71,7 +69,7 @@ var assetsInitialized:boolean = false;
 
 loader.load('assets/assets.json',
     function ( data ) {
-        assetsConfig = JSON.parse(<string>data);
+        assetsConfig = JSON.parse(<string>data)
 
         //load a text file and output the result to the console
         loader.load(
@@ -354,9 +352,9 @@ function setupThreeJsScene(){
 
 ///////////////////////////////////////// COMMAND HANDLING /////////////////////////////////////////
 
-function onMessageArrived(message : any) {
-    commandHandler(message.destinationName, message.payloadString);
-}
+// function onMessageArrived(message : any) {
+//     commandHandler(message.destinationName, message.payloadString);
+// }
 
 // function teamCommandHandler(command: string[], teamID: string) {
 
@@ -412,108 +410,108 @@ function onMessageArrived(message : any) {
 // }
 
 
-function commandHandler(incomingTopic, value:string) {
-    let topic = incomingTopic.substring(mqttSubscriptionRoot.length-1);
-    let topicParts = topic.split("/");
+// function commandHandler(incomingTopic, value:string) {
+//     let topic = incomingTopic.substring(mqttSubscriptionRoot.length-1);
+//     let topicParts = topic.split("/");
 
-    if(topicParts.slice(-1)[0].startsWith("$")){
-        // This incoming message is a homie metadata topic, we can ignore it
-        return;
-    }
+//     if(topicParts.slice(-1)[0].startsWith("$")){
+//         // This incoming message is a homie metadata topic, we can ignore it
+//         return;
+//     }
 
-    if (topicParts[0] == "gateway") {
-        const PLAYER_NODE_PREFIX = "player-";
-        const TEAM_NODE_PREFIX = "team-";
-        const SCOREBOARD_NODE_PREFIX = "scoreboard";
-        const GAME_NODE_PREFIX = "game";
+//     if (topicParts[0] == "gateway") {
+//         const PLAYER_NODE_PREFIX = "player-";
+//         const TEAM_NODE_PREFIX = "team-";
+//         const SCOREBOARD_NODE_PREFIX = "scoreboard";
+//         const GAME_NODE_PREFIX = "game";
 
-        const nodeName = topicParts[1];
-        /////////////
-        // If the message concerns a player or a team, we store its state for later reference
-        // Eventually, we could keep it in a store implementation - for the time being, maps of maps
-        if (nodeName.startsWith(PLAYER_NODE_PREFIX) ||
-        nodeName.startsWith(TEAM_NODE_PREFIX) ) {
-            let devicePrefix : string;
-            let stateMap : Map<string,any>;
-            let propertyName : string;
-            let eventType : MqttMicrosquadEventType;
-            let subject: Subject<MqttUpdateEvent>;
-            if (nodeName.startsWith(PLAYER_NODE_PREFIX)) {
-                devicePrefix = PLAYER_NODE_PREFIX;
-                stateMap = playerStates;
-                eventType = MqttMicrosquadEventType.PLAYER_UPDATE;
-                subject = playerSubject;
-            } else if (nodeName.startsWith(TEAM_NODE_PREFIX)) {
-                devicePrefix = TEAM_NODE_PREFIX;
-                stateMap = teamStates;
-                eventType = MqttMicrosquadEventType.TEAM_UPDATE;
-                subject = teamSubject;
-            }
-            if (devicePrefix != null) {
-                let deviceId = nodeName.substring(devicePrefix.length);
-                let propertyName = topicParts[2];
-                let state = stateMap.get(deviceId) ?? new Map();
-                state.set(propertyName, value);
-                stateMap.set(deviceId, state);
+//         const nodeName = topicParts[1];
+//         /////////////
+//         // If the message concerns a player or a team, we store its state for later reference
+//         // Eventually, we could keep it in a store implementation - for the time being, maps of maps
+//         if (nodeName.startsWith(PLAYER_NODE_PREFIX) ||
+//         nodeName.startsWith(TEAM_NODE_PREFIX) ) {
+//             let devicePrefix : string;
+//             let stateMap : Map<string,any>;
+//             let propertyName : string;
+//             let eventType : MqttMicrosquadEventType;
+//             let subject: Subject<MqttUpdateEvent>;
+//             if (nodeName.startsWith(PLAYER_NODE_PREFIX)) {
+//                 devicePrefix = PLAYER_NODE_PREFIX;
+//                 // stateMap = playerStates;
+//                 eventType = MqttMicrosquadEventType.PLAYER_UPDATE;
+//                 subject = playerSubject;
+//             } else if (nodeName.startsWith(TEAM_NODE_PREFIX)) {
+//                 devicePrefix = TEAM_NODE_PREFIX;
+//                 // stateMap = teamStates;
+//                 eventType = MqttMicrosquadEventType.TEAM_UPDATE;
+//                 subject = teamSubject;
+//             }
+//             if (devicePrefix != null) {
+//                 let deviceId = nodeName.substring(devicePrefix.length);
+//                 let propertyName = topicParts[2];
+//                 // let state = stateMap.get(deviceId) ?? new Map();
+//                 // state.set(propertyName, value);
+//                 // stateMap.set(deviceId, state);
 
-                subject.next(new MqttUpdateEvent(eventType, deviceId, propertyName, value));
-            }
-        } else if (topicParts[1].startsWith(SCOREBOARD_NODE_PREFIX)){
-            scoreboardSubject.next(new MqttUpdateEvent(MqttMicrosquadEventType.SCOREBOARD_UPDATE, null, topicParts[2], value));
-        } else if (topicParts[1].startsWith(GAME_NODE_PREFIX)){
-            // If the list of transitions available has changed, add buttons allowing to trigger them by modifying "fire-transition"
-            if(topicParts[2] == "transitions"){
-                var controlsDiv = <HTMLDivElement>document.getElementById("transition-controls");
-                controlsDiv.innerHTML="";
-                if(value.trim() != ""){
-                    value.split(",").forEach(transition => {
-                        var transitionButton : HTMLAnchorElement = <HTMLAnchorElement>document.createElement("a");
-                        transitionButton.classList.add("btn", "btn-primary", "btn-sm");
-                        transitionButton.setAttribute("role", "button");
-                        transitionButton.innerHTML = transition;
-                        transitionButton.setAttribute("data-transition-name", transition);
-                        transitionButton.addEventListener('click', event => { 
-                                var trns = (event.target as Element).getAttribute("data-transition-name");
-                                console.log("firing transition "+trns);
-                                fireTransitionViaMQTT(trns)
-                        });
-                        controlsDiv.appendChild(transitionButton);
-                    });
-                }
-            }
+//                 subject.next(new MqttUpdateEvent(eventType, deviceId, propertyName, value));
+//             }
+//         } else if (topicParts[1].startsWith(SCOREBOARD_NODE_PREFIX)){
+//             scoreboardSubject.next(new MqttUpdateEvent(MqttMicrosquadEventType.SCOREBOARD_UPDATE, null, topicParts[2], value));
+//         } else if (topicParts[1].startsWith(GAME_NODE_PREFIX)){
+//             // If the list of transitions available has changed, add buttons allowing to trigger them by modifying "fire-transition"
+//             if(topicParts[2] == "transitions"){
+//                 var controlsDiv = <HTMLDivElement>document.getElementById("transition-controls");
+//                 controlsDiv.innerHTML="";
+//                 if(value.trim() != ""){
+//                     value.split(",").forEach(transition => {
+//                         var transitionButton : HTMLAnchorElement = <HTMLAnchorElement>document.createElement("a");
+//                         transitionButton.classList.add("btn", "btn-primary", "btn-sm");
+//                         transitionButton.setAttribute("role", "button");
+//                         transitionButton.innerHTML = transition;
+//                         transitionButton.setAttribute("data-transition-name", transition);
+//                         transitionButton.addEventListener('click', event => { 
+//                                 var trns = (event.target as Element).getAttribute("data-transition-name");
+//                                 console.log("firing transition "+trns);
+//                                 fireTransitionViaMQTT(trns)
+//                         });
+//                         controlsDiv.appendChild(transitionButton);
+//                     });
+//                 }
+//             }
 
-        }
+//         }
 
-        //
-        ////////////////
-    }
+//         //
+//         ////////////////
+//     }
 
-}
+// }
 
-function onMqttConnect() {
-    console.log("Connected to " + mqttClient.uri);
-    if(config.MQTT_TOPIC_ROOT != null){
-        mqttTopicRoot = config.MQTT_TOPIC_ROOT
-    }
-    mqttSubscriptionRoot = mqttTopicRoot +"/#";
-    setTimeout(function(){
-        mqttClient.subscribe(mqttSubscriptionRoot);
-        // Update the game name
-        updateGameNameViaMQTT();
-    },500);
+// function onMqttConnect() {
+//     console.log("Connected to " + mqttClient.uri);
+//     if(config.MQTT_TOPIC_ROOT != null){
+//         mqttTopicRoot = config.MQTT_TOPIC_ROOT
+//     }
+//     mqttSubscriptionRoot = mqttTopicRoot +"/#";
+//     setTimeout(function(){
+//         mqttClient.subscribe(mqttSubscriptionRoot);
+//         // Update the game name
+//         updateGameNameViaMQTT();
+//     },500);
     
-}
+// }
 
 // function updateGameNameViaMQTT(){
 //     mqttClient.publish(mqttTopicRoot + "/gateway/game/name/set", gameName);
 // }
 
-function fireTransitionViaMQTT(transition){
-    mqttClient.publish(mqttTopicRoot + "/gateway/game/fire-transition/set", transition);
-}
+// function fireTransitionViaMQTT(transition){
+//     mqttClient.publish(mqttTopicRoot + "/gateway/game/fire-transition/set", transition);
+// }
 
-function onMqttConnectionLost(response) {
-    if (response.errorCode !== 0) {
-        console.error("Connection lost: " + response.errorMessage);
-    }
-}
+// function onMqttConnectionLost(response) {
+//     if (response.errorCode !== 0) {
+//         console.error("Connection lost: " + response.errorMessage);
+//     }
+// }
