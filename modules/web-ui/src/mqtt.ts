@@ -13,11 +13,10 @@ export class MQTTClient {
 
     gameName : string = ""
 
-    constructor (uri: string, clientID : string
+    constructor (uri: string
+            , clientID : string
             , mqttTopicRoot : string 
-            , messageArrivedCallback : (message : MQTT.Message) => void
-            , onConnectCallback? : () => void
-            , connectionLostCallback? : (response: any) => void
+            , gameName : string
             , playerSubject?: Subject<MqttUpdateEvent>
             , teamSubject?: Subject<MqttUpdateEvent>
             , scoreboardSubject?: Subject<MqttUpdateEvent>) {
@@ -27,20 +26,25 @@ export class MQTTClient {
         this.playerSubject = playerSubject
         this.teamSubject = teamSubject
         this.scoreboardSubject = scoreboardSubject
+        this.gameName = gameName
         this.mqttTopicRoot = mqttTopicRoot
         this.mqttSubscriptionRoot = mqttTopicRoot+"/#"
         
 
         // Callback handlers
-        this.client.onConnectionLost = connectionLostCallback || this._onConnectionLost;
-        this.client.onMessageArrived = messageArrivedCallback;
+        this.client.onConnectionLost = this._onConnectionLost;
+        this.client.onMessageArrived = this._onMessageArrived;
 
         this.client.connect({
             timeout: 10,
-            onSuccess: onConnectCallback || this._onConnect,
+            onSuccess: this._onConnect,
             onFailure: this._onFailure,
             reconnect: true,
         });
+    }
+
+    _onMessageArrived(message : any) {
+        this._mqttCommandHandler(message.destinationName, message.payloadString);
     }
 
     _onConnect() {
@@ -81,7 +85,7 @@ export class MQTTClient {
     }
 
     _mqttCommandHandler(incomingTopic, value:string) {
-        let topic = incomingTopic.substring(mqttSubscriptionRoot.length-1);
+        let topic = incomingTopic.substring(this.mqttSubscriptionRoot.length-1);
         let topicParts = topic.split("/");
     
         if(topicParts.slice(-1)[0].startsWith("$")){
@@ -108,26 +112,26 @@ export class MQTTClient {
                 let subject: Subject<MqttUpdateEvent>;
                 if (nodeName.startsWith(PLAYER_NODE_PREFIX)) {
                     devicePrefix = PLAYER_NODE_PREFIX;
-                    stateMap = playerStates;
+                    // stateMap = playerStates;
                     eventType = MqttMicrosquadEventType.PLAYER_UPDATE;
-                    subject = playerSubject;
+                    subject = this.playerSubject;
                 } else if (nodeName.startsWith(TEAM_NODE_PREFIX)) {
                     devicePrefix = TEAM_NODE_PREFIX;
-                    stateMap = teamStates;
+                    // stateMap = teamStates;
                     eventType = MqttMicrosquadEventType.TEAM_UPDATE;
-                    subject = teamSubject;
+                    subject = this.teamSubject;
                 }
                 if (devicePrefix != null) {
                     let deviceId = nodeName.substring(devicePrefix.length);
                     let propertyName = topicParts[2];
-                    let state = stateMap.get(deviceId) ?? new Map();
-                    state.set(propertyName, value);
-                    stateMap.set(deviceId, state);
+                    // let state = stateMap.get(deviceId) ?? new Map();
+                    // state.set(propertyName, value);
+                    // stateMap.set(deviceId, state);
     
                     subject.next(new MqttUpdateEvent(eventType, deviceId, propertyName, value));
                 }
             } else if (topicParts[1].startsWith(SCOREBOARD_NODE_PREFIX)){
-                scoreboardSubject.next(new MqttUpdateEvent(MqttMicrosquadEventType.SCOREBOARD_UPDATE, null, topicParts[2], value));
+                this.scoreboardSubject.next(new MqttUpdateEvent(MqttMicrosquadEventType.SCOREBOARD_UPDATE, null, topicParts[2], value));
             } else if (topicParts[1].startsWith(GAME_NODE_PREFIX)){
                 // If the list of transitions available has changed, add buttons allowing to trigger them by modifying "fire-transition"
                 if(topicParts[2] == "transitions"){
@@ -143,7 +147,7 @@ export class MQTTClient {
                             transitionButton.addEventListener('click', event => { 
                                     var trns = (event.target as Element).getAttribute("data-transition-name");
                                     console.log("firing transition "+trns);
-                                    fireTransitionViaMQTT(trns)
+                                    this.fireTransitionViaMQTT(trns)
                             });
                             controlsDiv.appendChild(transitionButton);
                         });
@@ -160,6 +164,11 @@ export class MQTTClient {
     _updateGameNameViaMQTT(){
         this.publish(this.mqttTopicRoot + "/gateway/game/name/set", this.gameName);
     }
+
+    fireTransitionViaMQTT(transition){
+        this.publish(this.mqttTopicRoot + "/gateway/game/fire-transition/set", transition);
+    }
+    
 }
 
 export enum MqttMicrosquadEventType {
