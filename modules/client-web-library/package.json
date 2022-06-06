@@ -1,0 +1,32 @@
+{
+  "name": "client-web-library",
+  "version": "1.0.0",
+  "description": "Web Client library for Microsquad",
+  "main": "client.ts",
+  "dependencies": {
+    "musquette": "^1.1.0",
+    "rxjs": "^7.5.5"
+  },
+  "devDependencies": {
+    "@types/jest": "^28.1.1",
+    "@types/node": "^17.0.40",
+    "ava": "^4.3.0",
+    "jest": "^28.1.0",
+    "ts-jest": "^28.0.4",
+    "typescript": "^4.7.3"
+  },
+  "files": [
+    "src/lib/**/*"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "jest --config jestconfig.json"
+  },
+  "keywords": [
+    "rxjs",
+    "mqtt",
+    "microsquad"
+  ],
+  "author": "CERN Micro Club",
+  "license": "ISC"
+}
