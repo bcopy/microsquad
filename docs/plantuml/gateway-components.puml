@@ -1,0 +1,23 @@
+@startuml Gateway components
+
+title Gateway components
+frame "Connector Scheduler"{
+    [Connector] <<bitio>>
+    [Gateway] <<microbit>>
+    [Terminal] <<microbit>>
+    USB -left-> Gateway
+    USB --> Connector
+    Radio <-> Gateway
+    Radio <--> Terminal
+}
+[MQTT Client] <<paho>> as mqtt
+
+frame "Mapper scheduler"{
+    [Mapper] 
+    RxPy -right-> Mapper
+    RxPy -up-> Connector
+Mapper -> Homie
+}
+Homie --> mqtt
+
+@enduml

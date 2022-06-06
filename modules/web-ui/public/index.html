@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<title>Microsquad</title>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MicroSquad</title>
+    <style>
+        #mqtt-interface {
+            position: absolute;
+            width: fit-content;
+            z-index: 10;
+            color: bisque;
+        }
+
+        body {
+            overflow-y: hidden;
+            overflow-x: hidden;
+        }
+    </style>
+</head>
+<body>
+    <div id="mqtt-interface" class="container-1">
+        
+        <div class="flex-box-container-1">
+            <div>
+                <!--Topic: <input id="sub-topic" type="text">
+                <button id="subscribe-button" class="btn btn-primary" disabled>Subscribe</button-->
+                <!-- <button id="add-player" class="btn btn-primary">Add Player</button>
+                <button id="zoom-screen" class="btn btn-primary">Zoom on screen</button> -->
+            </div>
+            <div id="game-status" style="opacity: 40%;">
+                <!-- We display here the currently active game and its status -->
+            </div>
+            <div id="transition-controls" style="opacity: 40%;">
+                <!-- We add here a button for each available game transition -->
+
+            </div>
+        </div>
+
+        <div>
+            <p id="subscriptions"></p>  
+            </p> 
+        </div>
+    </div>  
+</body>
+</html>

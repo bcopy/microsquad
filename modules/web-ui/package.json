@@ -1,0 +1,37 @@
+{
+  "name": "usquad-web-ui",
+  "version": "0.0.0",
+  "description": "",
+  "main": "webpack.prod.js",
+  "engines": {
+    "node": "14.15.4"
+  },
+  "dependencies": {
+    "@popperjs/core": "^2.10.2",
+    "bootstrap": "^5.1.1",
+    "clean-webpack-plugin": "^3.0.0",
+    "css-loader": "^6.3.0",
+    "dotenv-webpack": "^6.0.4",
+    "express": "^4.17.1",
+    "html-webpack-plugin": "^4.5.2",
+    "paho-mqtt": "^1.1.0",
+    "rxjs": "^7.3.0",
+    "style-loader": "^3.3.0",
+    "three": "^0.125.1",
+    "ts-loader": "^8.0.14",
+    "typescript": "^4.1.3",
+    "webpack": "^5.18.0",
+    "webpack-cli": "^3.3.12",
+    "webpack-merge": "^5.7.3"
+  },
+  "devDependencies": {
+    "three-plain-animator": "^1.0.6",
+    "webpack-dev-server": "^3.11.2"
+  },
+  "scripts": {
+    "build": "webpack --config webpack.prod.js",
+    "start": "webpack-dev-server --port 8000 --config webpack.dev.js"
+  },
+  "author": "Lucas Van Mol",
+  "license": "GPLv3"
+}

@@ -1,0 +1,14 @@
+node_modules
+.ci
+.git
+.gitignore
+.github
+.env
+README.md
+sonar-project.properties
+cypress
+cypress.json
+
+Dockerfile
+.dockerignore
+docker-compose.yml

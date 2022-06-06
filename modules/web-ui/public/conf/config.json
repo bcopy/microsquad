@@ -1,0 +1,4 @@
+{
+    "MQTT_URI": "ws://localhost:9001/mqtt",
+    "MQTT_TOPIC_ROOT": "microsquad"
+}

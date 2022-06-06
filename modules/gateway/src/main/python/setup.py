@@ -1,10 +1,12 @@
 from setuptools import setup, find_packages
 
 setup(
-      install_requires=[ 'dotenv','influx_line_protocol>=0.1.4','cs20-microbitio==0.2', 'paho-mqtt==1.5.1'],
+      setup_requires=['pytest-runner'],
+      install_requires=[ 'wheel','cs20-microbitio==0.2', 'paho-mqtt==1.5.1', 'RxPy3', 'Homie4', 'python-dotenv', "homieclient"],
       extras_require={
-         'test':['testfixtures','hbmqtt']
+         'test':['pytest','pytest-cov','hbmqtt']
       },
+      tests_require=['pytest'],
       name = 'microsquad-gateway',
       python_requires= '>=3.4.0',
       version="0.1",  # version = '${VERSION}',
@@ -27,9 +29,9 @@ setup(
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3 :: Only",
-        "Programming Language :: Python :: 3.4",
-        "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
         "Topic :: Education",
         "Topic :: Software Development",
       ],
