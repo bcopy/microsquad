@@ -240,7 +240,7 @@ objects:
         spec:
           containers:
             - image: >-
-                gitlab-registry.cern.ch/cmcrobotics/microsquad:${IMAGE_VERSION}
+                gitlab-registry.cern.ch/cmcrobotics/microsquad/web-ui:${IMAGE_VERSION}
               imagePullPolicy: Always
               name: web-ui
               livenessProbe:
