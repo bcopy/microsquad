@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+      "target": "es5",
+      "module": "commonjs",
+      "sourceMap": true,
+      "declaration": true,
+      "outDir": "./dist/lib",
+      "strict": true,
+      "typeRoots": [
+        "node_modules/@types"
+      ],
+      "types": ["node", "jest"]
+    },
+    "typeAcquisition": { "include": ["jest"] },
+    "include": ["src/**/*"],
+    "exclude": ["node_modules"]
+  }
