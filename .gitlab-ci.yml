@@ -41,11 +41,10 @@ Build Web UI image:
       entrypoint: [""]
     script:
       - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
-      - echo Building latest Docker Image $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
-      - /kaniko/executor --context $CI_PROJECT_DIR/modules/web-ui --dockerfile $CI_PROJECT_DIR/modules/web-ui/Dockerfile --destination $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
+      - echo Building latest Docker Image $CI_REGISTRY_IMAGE/web-ui:$CI_COMMIT_REF_NAME
+      - /kaniko/executor --context $CI_PROJECT_DIR/modules/web-ui --dockerfile $CI_PROJECT_DIR/modules/web-ui/Dockerfile --destination $CI_REGISTRY_IMAGE/web-ui:$CI_COMMIT_REF_NAME
     only:
-      - master
-      - develop
+      refs: [master, develop]
 
 
 Update deployment:

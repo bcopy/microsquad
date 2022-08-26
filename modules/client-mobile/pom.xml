@@ -9,10 +9,10 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <artifactId>microsquad-web-ui</artifactId>
+    <artifactId>mobile-client</artifactId>
     <packaging>jar</packaging>
 	
-    <name>Microsquad :: Web UI frontend</name>
+    <name>Microsquad :: Mobile Client</name>
     <description>${project.name}</description>
 	
 	
