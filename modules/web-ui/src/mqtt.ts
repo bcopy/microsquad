@@ -32,13 +32,14 @@ export class MQTTClient {
         
 
         // Callback handlers
-        this.client.onConnectionLost = this._onConnectionLost;
-        this.client.onMessageArrived = this._onMessageArrived;
+        this.client.onConnectionLost = this._onConnectionLost.bind(this);
+        this.client.onMessageArrived = this._onMessageArrived.bind(this);
 
+        var mqttClient = this;
         this.client.connect({
             timeout: 10,
-            onSuccess: this._onConnect,
-            onFailure: this._onFailure,
+            onSuccess: this._onConnect.bind(this),
+            onFailure: this._onFailure.bind(this),
             reconnect: true,
         });
     }
@@ -48,12 +49,12 @@ export class MQTTClient {
     }
 
     _onConnect() {
-        console.log("Succesfully Connected");
-        setTimeout(function(){
-            this.subscribe(this.mqttSubscriptionRoot);
+        console.log("Successfully connected");
+        setTimeout(function(mqttClient){
+            mqttClient.client.subscribe(mqttClient.mqttSubscriptionRoot);
             // Update the game name
-            this.updateGameNameViaMQTT();
-        },500);
+            mqttClient._updateGameNameViaMQTT();
+        },500, this);
         
     }
       
@@ -161,6 +162,7 @@ export class MQTTClient {
         }
     
     }
+
     _updateGameNameViaMQTT(){
         this.publish(this.mqttTopicRoot + "/gateway/game/name/set", this.gameName);
     }
